@@ -2,17 +2,21 @@ package main
 
 import (
 	"encoding/json"
+	"log"
+	"time"
 )
 
 var last_updated_at string = "0"
 var last_id string = "0"
 var last_id_waiting string = "0"
+var layout string = "2006-01-02T15:04:05.000Z"
 
 type Payload struct {
-	IdBet                string  `json:"id"`
-	Color                int     `json:"color"`
-	Roll                 int     `json:"roll"`
-	CreatedAt            string  `json:"created_at"`
+	IdBet                string `json:"id"`
+	Color                int    `json:"color"`
+	Roll                 int    `json:"roll"`
+	CreatedAt            string `json:"created_at"`
+	Timestamp            int64
 	UpdatedAt            string  `json:"updated_at"`
 	Status               string  `json:"status"`
 	TotalRedEurBet       float64 `json:"total_red_eur_bet"`
@@ -21,7 +25,25 @@ type Payload struct {
 	TotalWhiteBetsPlaced int     `json:"total_white_bets_placed"`
 	TotalBlackEurBet     float64 `json:"total_black_eur_bet"`
 	TotalBlackBetsPlaced int     `json:"total_black_bets_placed"`
-	Bets                 []Bet   `json:"bets"`
+	TotalBetsPlaced      int
+	TotalEurBet          float64
+	TotalRetentionEur    float64
+	Bets                 []Bet `json:"bets"`
+}
+
+func (p *Payload) calculateTotalBetsPlaced() {
+	p.TotalBetsPlaced = int(p.TotalRedBetsPlaced + p.TotalWhiteBetsPlaced + p.TotalBlackBetsPlaced)
+}
+
+func (p *Payload) calculateTotalBetsEur() {
+	p.TotalEurBet = float64(p.TotalRedEurBet + p.TotalWhiteEurBet + p.TotalBlackEurBet)
+}
+
+func (p *Payload) calculateTotalRetentionEur() {
+	if p.Color == 1 {
+		p.TotalRetentionEur = float64(p.TotalEurBet)
+	}
+
 }
 
 type Bet struct {
@@ -48,4 +70,40 @@ func decodePayload(message []byte) (*Payload, error) {
 	}
 	// Retorna a mensagem decodificada
 	return &payload, nil
+}
+
+func filterMessage(payload *Payload) error {
+	//Verifica se a mensagem é duplicada com base no campo updated_at
+	if payload.Status != "waiting" && last_updated_at != payload.UpdatedAt && last_id != payload.IdBet {
+		last_updated_at = payload.UpdatedAt
+		last_id = payload.IdBet
+		t_complete, _ := time.Parse(layout, payload.CreatedAt)
+		payload.Timestamp = t_complete.Unix()
+		payload.calculateTotalBetsPlaced()
+		payload.calculateTotalBetsEur()
+		payload.calculateTotalRetentionEur()
+		//log.Printf("Mensagem recebida, Enviar msg de socket: %+v", payload)
+		//aqui precisa ser enviada uma msg UDP para o servidor
+		err := sendUDPMessage(payload)
+		if err != nil {
+			// tratar erro de envio
+			log.Printf("error sending: %v", err)
+			return err
+		}
+	} else if payload.Status == "waiting" && last_id_waiting != payload.IdBet {
+		//log.Printf("Mensagem waiting, Enviar msg de socket: %+v", payload)
+		last_id_waiting = payload.IdBet
+		t_waiting, _ := time.Parse(layout, payload.CreatedAt)
+		payload.Timestamp = t_waiting.Unix()
+
+		//log.Printf("Mensagem waiting, Enviar msg de socket: %+v", payload)
+		//aqui precisa ser enviada uma msg UDP para o servidor
+		err := sendUDPMessage(payload)
+		if err != nil {
+			// tratar erro de envio
+			log.Printf("error sending: %v", err)
+			return err
+		}
+	}
+	return nil
 }
