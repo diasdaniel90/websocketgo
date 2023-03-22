@@ -25,31 +25,13 @@ func main() {
 			if err != nil {
 				log.Fatalf("Erro ao decodificar mensagem: %s", err)
 			} else {
-				//Verifica se a mensagem é duplicada com base no campo updated_at
-				if payload.Status != "waiting" && last_updated_at != payload.UpdatedAt && last_id != payload.IdBet {
-					log.Printf("Mensagem recebida, Enviar msg de socket: %+v", payload)
-					last_updated_at = payload.UpdatedAt
-					last_id = payload.IdBet
-					//aqui precisa ser enviada uma msg UDP para o servidor
-					err := sendUDPMessage("resultado")
-					if err != nil {
-						// tratar erro de envio
-						log.Printf("error sending: %v", err)
-					}
-				} else if payload.Status == "waiting" && last_id_waiting != payload.IdBet {
-					log.Printf("Mensagem waiting, Enviar msg de socket: %+v", payload)
-					last_id_waiting = payload.IdBet
-					//aqui precisa ser enviada uma msg UDP para o servidor
-					err := sendUDPMessage("pronto para apostar")
-					if err != nil {
-						// tratar erro de envio
-						log.Printf("error sending: %v", err)
-					}
+				if err := filterMessage(payload); err != nil {
+					log.Fatalf("Erro ao filtrar mensagem: %s", err)
 				}
 
-				if payload.Status == "waiting" {
-					log.Print("waiting")
-				}
+				// if payload.Status == "waiting" {
+				// 	log.Print("waiting")
+				// }
 			}
 		case err := <-errChan:
 			fmt.Println(err)
