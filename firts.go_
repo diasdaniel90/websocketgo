@@ -1,0 +1,46 @@
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func minhaGoroutine(sinal chan bool) {
+	// loop infinito
+	for {
+		// faça algo aqui
+		i := 0
+		for i < 10 {
+			fmt.Println(i)
+			i++
+			if i == 1 {
+				// envie o sinal de saída e encerre a goroutine
+				sinal <- true
+				return
+			}
+			if i == 1 {
+				// envie o sinal de saída e encerre a goroutine
+				//sinal <- true
+				return
+			}
+		}
+		// verifique a condição de saída
+
+	}
+}
+
+func main() {
+	sinal := make(chan bool)
+
+	// inicie a goroutine
+	go minhaGoroutine(sinal)
+
+	// monitore o canal de sinais de saída
+	select {
+	case <-time.After(5 * time.Second):
+		fmt.Println("Recebido sinal de saída, reiniciando goroutine666...")
+	case <-time.After(3 * time.Second):
+		fmt.Println("Tempo limite atingido, reiniciando goroutine777...")
+
+	}
+}
