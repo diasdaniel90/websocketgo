@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net"
 )
 
@@ -52,7 +51,6 @@ func sendUDPMessage(payload *Payload) error {
 		return err
 	}
 	//fmt.Print(n)
-	//fmt.Printf("message enviada : %+v\n", messageJson)
-	log.Print("message enviada : ", messageJson)
+	//log.Print("message enviada : ", messageJson)
 	return nil
 }

@@ -9,7 +9,8 @@ import (
 var last_updated_at string = "0"
 var last_id string = "0"
 var last_id_waiting string = "0"
-var layout string = "2006-01-02T15:04:05.000Z"
+
+const layout = "2006-01-02T15:04:05.000Z"
 
 type Payload struct {
 	IdBet                string `json:"id"`
@@ -40,8 +41,13 @@ func (p *Payload) calculateTotalBetsEur() {
 }
 
 func (p *Payload) calculateTotalRetentionEur() {
-	if p.Color == 1 {
-		p.TotalRetentionEur = float64(p.TotalEurBet)
+	switch p.Color {
+	case 1:
+		p.TotalRetentionEur = float64(p.TotalEurBet - p.TotalRedEurBet*2)
+	case 2:
+		p.TotalRetentionEur = float64(p.TotalEurBet - p.TotalBlackEurBet*2)
+	case 0:
+		p.TotalRetentionEur = float64(p.TotalEurBet - p.TotalWhiteEurBet*14)
 	}
 
 }
@@ -79,30 +85,25 @@ func filterMessage(payload *Payload) error {
 		last_id = payload.IdBet
 		t_complete, _ := time.Parse(layout, payload.CreatedAt)
 		payload.Timestamp = t_complete.Unix()
+
 		payload.calculateTotalBetsPlaced()
 		payload.calculateTotalBetsEur()
 		payload.calculateTotalRetentionEur()
-		//log.Printf("Mensagem recebida, Enviar msg de socket: %+v", payload)
-		//aqui precisa ser enviada uma msg UDP para o servidor
+
 		err := sendUDPMessage(payload)
 		if err != nil {
-			// tratar erro de envio
 			log.Printf("error sending: %v", err)
 			return err
 		}
+
 	} else if payload.Status == "waiting" && last_id_waiting != payload.IdBet {
-		//log.Printf("Mensagem waiting, Enviar msg de socket: %+v", payload)
 		last_id_waiting = payload.IdBet
 		t_waiting, _ := time.Parse(layout, payload.CreatedAt)
 		payload.Timestamp = t_waiting.Unix()
-
-		//log.Printf("Mensagem waiting, Enviar msg de socket: %+v", payload)
-		//aqui precisa ser enviada uma msg UDP para o servidor
 		err := sendUDPMessage(payload)
 		if err != nil {
-			// tratar erro de envio
 			log.Printf("error sending: %v", err)
-			return err
+			return nil
 		}
 	}
 	return nil
