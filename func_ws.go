@@ -51,7 +51,6 @@ func connect() (*websocket.Conn, error) {
 }
 
 func readMessages(conn *websocket.Conn, msgChan chan []byte, errChan chan error) {
-
 	for {
 		_, payload, err := conn.ReadMessage()
 		if err != nil {

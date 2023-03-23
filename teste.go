@@ -1,11 +1,19 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 )
 
 func main() {
+
+	db, err := sql.Open("mysql", "usuario:senha@/nome_do_banco_de_dados")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
 	conn, err := connect()
 	if err != nil {
 		log.Fatalf("error connecting to websocket: %v", err)
@@ -28,10 +36,13 @@ func main() {
 				if err := filterMessage(payload); err != nil {
 					log.Fatalf("Erro ao filtrar mensagem: %s", err)
 				}
-
-				// if payload.Status == "waiting" {
-				// 	log.Print("waiting")
-				// }
+				log.Print(payload)
+				if payload.Status == "waiting" {
+					err := saveToDatabase(payload)
+					if err != nil {
+						log.Fatalf("Erro ao inserir mensagem: %s", err)
+					}
+				}
 			}
 		case err := <-errChan:
 			fmt.Println(err)
