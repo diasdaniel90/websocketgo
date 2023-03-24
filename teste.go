@@ -4,11 +4,14 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 func main() {
+	mysqlConfig := Envs()
 
-	db, err := sql.Open("mysql", "usuario:senha@/nome_do_banco_de_dados")
+	db, err := sql.Open("mysql", mysqlConfig.MysqlString())
 	if err != nil {
 		log.Fatal(err)
 	}
