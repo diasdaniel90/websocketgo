@@ -40,12 +40,12 @@ func main() {
 					log.Fatalf("Erro ao filtrar mensagem: %s", err)
 				}
 				log.Print(payload)
-				if payload.Status == "waiting" {
-					err := saveToDatabase(payload)
-					if err != nil {
-						log.Fatalf("Erro ao inserir mensagem: %s", err)
-					}
-				}
+				// if payload.Status == "waiting" {
+				// 	err := saveToDatabase(payload)
+				// 	if err != nil {
+				// 		log.Fatalf("Erro ao inserir mensagem: %s", err)
+				// 	}
+				// }
 			}
 		case err := <-errChan:
 			fmt.Println(err)

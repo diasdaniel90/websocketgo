@@ -89,8 +89,13 @@ func filterMessage(payload *Payload) error {
 		payload.calculateTotalBetsPlaced()
 		payload.calculateTotalBetsEur()
 		payload.calculateTotalRetentionEur()
-		saveToDatabase(payload)
-		err := sendUDPMessage(payload)
+		//saveToDatabase(payload)
+		err := saveToDatabase(payload)
+		if err != nil {
+			log.Printf("error sending: %v", err)
+			return err
+		}
+		err = sendUDPMessage(payload)
 		if err != nil {
 			log.Printf("error sending: %v", err)
 			return err
