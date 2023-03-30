@@ -1,14 +1,15 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"log"
 	"time"
 )
 
-var last_updated_at string = "0"
-var last_id string = "0"
-var last_id_waiting string = "0"
+var lastUpdatedAt string = "0"
+var lastId string = "0"
+var lastIdWaiting string = "0"
 
 const layout = "2006-01-02T15:04:05.000Z"
 
@@ -78,21 +79,20 @@ func decodePayload(message []byte) (*Payload, error) {
 	return &payload, nil
 }
 
-func filterMessage(payload *Payload) error {
+func filterMessage(db *sql.DB, payload *Payload) error {
 	//Verifica se a mensagem é duplicada com base no campo updated_at
-	if payload.Status != "waiting" && last_updated_at != payload.UpdatedAt && last_id != payload.IdBet {
-		last_updated_at = payload.UpdatedAt
-		last_id = payload.IdBet
-		t_complete, _ := time.Parse(layout, payload.CreatedAt)
-		payload.Timestamp = t_complete.Unix()
+	if payload.Status != "waiting" && lastUpdatedAt != payload.UpdatedAt && lastId != payload.IdBet {
+		lastUpdatedAt = payload.UpdatedAt
+		lastId = payload.IdBet
+		tComplete, _ := time.Parse(layout, payload.CreatedAt)
+		payload.Timestamp = tComplete.Unix()
 
 		payload.calculateTotalBetsPlaced()
 		payload.calculateTotalBetsEur()
 		payload.calculateTotalRetentionEur()
-		//saveToDatabase(payload)
-		err := saveToDatabase(payload)
+		err := saveToDatabase(db, payload)
 		if err != nil {
-			log.Printf("error sending: %v", err)
+			log.Printf("error no banco: %v", err)
 			return err
 		}
 		err = sendUDPMessage(payload)
@@ -100,16 +100,18 @@ func filterMessage(payload *Payload) error {
 			log.Printf("error sending: %v", err)
 			return err
 		}
-
-	} else if payload.Status == "waiting" && last_id_waiting != payload.IdBet {
-		last_id_waiting = payload.IdBet
+		log.Println("Apostas fechadas e resultado")
+	} else if payload.Status == "waiting" && lastIdWaiting != payload.IdBet {
+		lastIdWaiting = payload.IdBet
 		t_waiting, _ := time.Parse(layout, payload.CreatedAt)
 		payload.Timestamp = t_waiting.Unix()
 		err := sendUDPMessage(payload)
 		if err != nil {
 			log.Printf("error sending: %v", err)
-			return nil
+			return err
 		}
+		log.Println("Pronto para apostar")
+
 	}
 	return nil
 }

@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	mysqlConfig := Envs()
+	mysqlConfig, err := Envs()
 
 	db, err := sql.Open("mysql", mysqlConfig.MysqlString())
 	if err != nil {
@@ -36,16 +36,15 @@ func main() {
 			if err != nil {
 				log.Fatalf("Erro ao decodificar mensagem: %s", err)
 			} else {
-				if err := filterMessage(payload); err != nil {
+				if err := filterMessage(db, payload); err != nil {
 					log.Fatalf("Erro ao filtrar mensagem: %s", err)
 				}
-				log.Print(payload)
-				// if payload.Status == "waiting" {
-				// 	err := saveToDatabase(payload)
-				// 	if err != nil {
-				// 		log.Fatalf("Erro ao inserir mensagem: %s", err)
-				// 	}
-				// }
+				if payload.Status == "waiting" {
+					err := saveToDatabaseUsers(db, payload)
+					if err != nil {
+						log.Fatalf("error no banco: %s", err)
+					}
+				}
 			}
 		case err := <-errChan:
 			fmt.Println(err)

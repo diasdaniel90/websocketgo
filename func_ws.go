@@ -60,9 +60,7 @@ func readMessages(conn *websocket.Conn, msgChan chan []byte, errChan chan error)
 			if strings.Contains(string(payload), "double.tick") {
 				msgChan <- payload
 			}
-
 		}
-
 	}
 }
 
