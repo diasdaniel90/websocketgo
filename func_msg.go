@@ -54,7 +54,7 @@ func (p *Payload) calculateTotalRetentionEur() {
 }
 
 type Bet struct {
-	IDBets       string  `json:"id"`
+	IDBetUser    string  `json:"id"`
 	Color        int     `json:"color"`
 	Amount       float32 `json:"amount"`
 	CurrencyType string  `json:"currency_type"`
@@ -103,8 +103,8 @@ func filterMessage(db *sql.DB, payload *Payload) error {
 		log.Println("Apostas fechadas e resultado")
 	} else if payload.Status == "waiting" && lastIdWaiting != payload.IdBet {
 		lastIdWaiting = payload.IdBet
-		t_waiting, _ := time.Parse(layout, payload.CreatedAt)
-		payload.Timestamp = t_waiting.Unix()
+		tWaiting, _ := time.Parse(layout, payload.CreatedAt)
+		payload.Timestamp = tWaiting.Unix()
 		err := sendUDPMessage(payload)
 		if err != nil {
 			log.Printf("error sending: %v", err)
