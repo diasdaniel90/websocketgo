@@ -11,7 +11,7 @@ func saveToDatabase(db *sql.DB, p *Payload) error {
 
 	// Consultar se já existe registro com o id_bet informado
 	var exists bool
-	err := db.QueryRow("SELECT EXISTS(SELECT id_bet FROM source_double.api_serverresult WHERE id_bet = ?)", p.IdBet).Scan(&exists)
+	err := db.QueryRow("SELECT EXISTS(SELECT id_bet FROM api_serverresult WHERE id_bet = ?)", p.IdBet).Scan(&exists)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -22,7 +22,7 @@ func saveToDatabase(db *sql.DB, p *Payload) error {
 	}
 
 	// Preparar o comando SQL para inserir dados na tabela
-	stmt, err := db.Prepare("INSERT INTO  source_double.api_serverresult (ID_bet, bet_color, bet_roll, `timestamp`, bet_status, total_red_eur_bet, total_red_bets_placed, total_white_eur_bet, total_white_bets_placed, total_black_eur_bet, total_black_bets_placed, total_bets_placed, total_eur_bet, total_retention_eur) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+	stmt, err := db.Prepare("INSERT INTO  api_serverresult (ID_bet, bet_color, bet_roll, `timestamp`, bet_status, total_red_eur_bet, total_red_bets_placed, total_white_eur_bet, total_white_bets_placed, total_black_eur_bet, total_black_bets_placed, total_bets_placed, total_eur_bet, total_retention_eur) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -44,7 +44,7 @@ func saveToDatabaseUsers(db *sql.DB, p *Payload) error {
 
 	for _, bet := range (*p).Bets {
 		var exists bool
-		err := db.QueryRow("SELECT EXISTS(SELECT ID_bet_uniqa FROM source_double.api_userresult WHERE ID_bet_uniqa = ?)", bet.IDBetUser).Scan(&exists)
+		err := db.QueryRow("SELECT EXISTS(SELECT ID_bet_uniqa FROM api_userresult WHERE ID_bet_uniqa = ?)", bet.IDBetUser).Scan(&exists)
 		if err != nil {
 			log.Println(err)
 			return err
@@ -55,7 +55,7 @@ func saveToDatabaseUsers(db *sql.DB, p *Payload) error {
 		}
 		tBetUser, _ := time.Parse(layout, p.CreatedAt)
 		p.Timestamp = tBetUser.Unix()
-		stmt, err := db.Prepare("INSERT INTO source_double.api_userresult (ID_bet, ID_bet_uniqa, `timestamp`, color, amount, currency_type,user) VALUES (?, ?, ?, ?, ?, ?, ?)")
+		stmt, err := db.Prepare("INSERT INTO api_userresult (ID_bet, ID_bet_uniqa, `timestamp`, color, amount, currency_type,user) VALUES (?, ?, ?, ?, ?, ?, ?)")
 		if err != nil {
 			panic(err.Error())
 		}
