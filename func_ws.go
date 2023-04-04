@@ -18,7 +18,9 @@ const (
 
 func writePing(conn *websocket.Conn) {
 	ticker := time.NewTicker(pingInterval)
+
 	defer ticker.Stop()
+
 	for range ticker.C {
 		err := conn.WriteMessage(websocket.BinaryMessage, []byte(pingMessage))
 		if err != nil {
@@ -46,6 +48,7 @@ func connect() (*websocket.Conn, error) {
 	// Envie uma mensagem de assinatura para o servidor
 	message := []byte(`420["cmd",{"id":"subscribe","payload":{"room":"double_v2"}}]`)
 	err = conn.WriteMessage(websocket.TextMessage, message)
+
 	if err != nil {
 		log.Fatalf("Erro ao enviar mensagem: %s", err)
 	}
@@ -60,8 +63,8 @@ func readMessages(conn *websocket.Conn, msgChan chan []byte, errChan chan error)
 		_, payload, err := conn.ReadMessage()
 		if err != nil {
 			errChan <- fmt.Errorf("error reading message: %w", err)
-			return
 
+			return
 		} else if strings.Contains(string(payload), "double.tick") {
 			msgChan <- payload
 		}
@@ -71,15 +74,16 @@ func readMessages(conn *websocket.Conn, msgChan chan []byte, errChan chan error)
 func reconnect(conn *websocket.Conn, msgChan chan []byte, errChan chan error) {
 	log.Println("Conexão fechada pelo servidor, reconectando...")
 
-	err := conn.Close()
-	if err != nil {
+	if err := conn.Close(); err != nil {
 		log.Printf("error closing connection: %v", err)
 	}
 
 	time.Sleep(writeWait)
+
 	newConn, err := connect()
 	if err != nil {
 		errChan <- fmt.Errorf("error reconnecting to websocket: %w", err)
+
 		return
 	}
 

@@ -22,6 +22,7 @@ func Envs() (*Config, error) {
 	}
 
 	var cfg Config
+
 	err = json.Unmarshal(file, &cfg)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal JSON: %w", err)

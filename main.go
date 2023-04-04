@@ -12,12 +12,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	db, err := sql.Open("mysql", mysqlConfig.MysqlString())
+
+	dbConexao, err := sql.Open("mysql", mysqlConfig.MysqlString())
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer db.Close()
+	defer dbConexao.Close()
 
 	conn, err := connect()
 	if err != nil {
@@ -37,18 +38,21 @@ func main() {
 			payload, err := decodePayload(msg[2:])
 			if err != nil {
 				log.Printf("Erro ao decodificar mensagem: %s", err)
+
 				return
 			}
 
-			if err := filterMessage(db, payload); err != nil {
+			if err := filterMessage(dbConexao, payload); err != nil {
 				log.Printf("Erro ao filtrar mensagem: %s", err.Error())
+
 				return
 			}
 
 			if payload.Status == "waiting" {
-				err := saveToDatabaseUsers(db, payload)
+				err := saveToDatabaseUsers(dbConexao, payload)
 				if err != nil {
 					log.Printf("error no banco: %s", err)
+
 					return
 				}
 			}
