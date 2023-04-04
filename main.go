@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -10,16 +9,19 @@ import (
 
 func main() {
 	mysqlConfig, err := Envs()
-
+	if err != nil {
+		log.Fatal(err)
+	}
 	db, err := sql.Open("mysql", mysqlConfig.MysqlString())
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer db.Close()
 
 	conn, err := connect()
 	if err != nil {
-		log.Fatalf("error connecting to websocket: %v", err)
+		log.Printf("error connecting to websocket: %v", err)
 	}
 	defer conn.Close()
 
@@ -34,20 +36,25 @@ func main() {
 		case msg := <-msgChan:
 			payload, err := decodePayload(msg[2:])
 			if err != nil {
-				log.Fatalf("Erro ao decodificar mensagem: %s", err)
-			} else {
-				if err := filterMessage(db, payload); err != nil {
-					log.Fatalf("Erro ao filtrar mensagem: %s", err)
-				}
-				if payload.Status == "waiting" {
-					err := saveToDatabaseUsers(db, payload)
-					if err != nil {
-						log.Fatalf("error no banco: %s", err)
-					}
+				log.Printf("Erro ao decodificar mensagem: %s", err)
+				return
+			}
+
+			if err := filterMessage(db, payload); err != nil {
+				log.Printf("Erro ao filtrar mensagem: %s", err.Error())
+				return
+			}
+
+			if payload.Status == "waiting" {
+				err := saveToDatabaseUsers(db, payload)
+				if err != nil {
+					log.Printf("error no banco: %s", err)
+					return
 				}
 			}
+
 		case err := <-errChan:
-			fmt.Println(err)
+			log.Println(err)
 			reconnect(conn, msgChan, errChan)
 		}
 	}

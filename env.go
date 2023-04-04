@@ -2,29 +2,31 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"fmt"
+	"os"
 )
 
 type Config struct {
-	EnvRef        string `json:"EnvRef"`
-	MySQLDatabase string `json:"MySQLDatabase"`
-	MySQLUser     string `json:"MySQLUser"`
-	MySQLPassword string `json:"MySQLPassword"`
-	MySQLHost     string `json:"MySQLHost"`
-	MySQLPort     string `json:"MySQLPort"`
+	EnvRef        string `json:"envRef"`
+	MySQLDatabase string `json:"mySqlDatabase"`
+	MySQLUser     string `json:"mySqlUser"`
+	MySQLPassword string `json:"mySqlPassword"`
+	MySQLHost     string `json:"mySqlHost"`
+	MySQLPort     string `json:"mySqlPort"`
 }
 
 func Envs() (*Config, error) {
-	file, err := ioutil.ReadFile("config.json")
+	file, err := os.ReadFile("config.json")
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("failed to read file: %w", err)
 	}
 
 	var cfg Config
 	err = json.Unmarshal(file, &cfg)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("failed to unmarshal JSON: %w", err)
 	}
+
 	return &cfg, nil
 }
 

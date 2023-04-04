@@ -3,13 +3,14 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
 )
 
 var lastUpdatedAt string = "0"
-var lastId string = "0"
-var lastIdWaiting string = "0"
+var lastID string = ""
+var lastIDWaiting string = "0"
 
 const layout = "2006-01-02T15:04:05.000Z"
 
@@ -50,7 +51,6 @@ func (p *Payload) calculateTotalRetentionEur() {
 	case 0:
 		p.TotalRetentionEur = float64(p.TotalEurBet - p.TotalWhiteEurBet*14)
 	}
-
 }
 
 type Bet struct {
@@ -65,25 +65,24 @@ type Bet struct {
 }
 
 func decodePayload(message []byte) (*Payload, error) {
-	//payload := data[1].(map[string]interface{})["payload"]
 	var data []json.RawMessage
 	if err := json.Unmarshal([]byte(message), &data); err != nil {
-		panic(err)
+		return nil, fmt.Errorf("error connecting to websocket: %w", err)
 	}
 
 	var payload Payload
 	if err := json.Unmarshal(data[1], &struct{ Payload *Payload }{&payload}); err != nil {
-		panic(err)
+		return nil, fmt.Errorf("error connecting to websocket: %w", err)
 	}
 	// Retorna a mensagem decodificada
 	return &payload, nil
 }
 
 func filterMessage(db *sql.DB, payload *Payload) error {
-	//Verifica se a mensagem é duplicada com base no campo updated_at
-	if payload.Status != "waiting" && lastUpdatedAt != payload.UpdatedAt && lastId != payload.IdBet {
+	// Verifica se a mensagem é duplicada com base no campo updated_at
+	if payload.Status != "waiting" && lastUpdatedAt != payload.UpdatedAt && lastID != payload.IdBet {
 		lastUpdatedAt = payload.UpdatedAt
-		lastId = payload.IdBet
+		lastID = payload.IdBet
 		tComplete, _ := time.Parse(layout, payload.CreatedAt)
 		payload.Timestamp = tComplete.Unix()
 
@@ -92,26 +91,25 @@ func filterMessage(db *sql.DB, payload *Payload) error {
 		payload.calculateTotalRetentionEur()
 		err := saveToDatabase(db, payload)
 		if err != nil {
-			log.Printf("error no banco: %v", err)
-			return err
+			return fmt.Errorf("error connecting to websocket: %w", err)
 		}
+
 		err = sendUDPMessage(payload)
 		if err != nil {
-			log.Printf("error sending: %v", err)
-			return err
+			return fmt.Errorf("error connecting to websocket: %w", err)
 		}
+
 		log.Println("Apostas fechadas e resultado")
-	} else if payload.Status == "waiting" && lastIdWaiting != payload.IdBet {
-		lastIdWaiting = payload.IdBet
+	} else if payload.Status == "waiting" && lastIDWaiting != payload.IdBet {
+		lastIDWaiting = payload.IdBet
 		tWaiting, _ := time.Parse(layout, payload.CreatedAt)
 		payload.Timestamp = tWaiting.Unix()
 		err := sendUDPMessage(payload)
 		if err != nil {
-			log.Printf("error sending: %v", err)
-			return err
+			return fmt.Errorf("error connecting to websocket: %w", err)
 		}
 		log.Println("Pronto para apostar")
-
 	}
+
 	return nil
 }

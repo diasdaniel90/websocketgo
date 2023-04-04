@@ -3,13 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net"
 )
 
 const address = "127.0.0.1:20001"
-
-//({'ID_bet': "B", 'timestamp': timestamp_status, 'bet_status': 'waiting'})
-//({'ID_bet': "B", 'timestamp': timestamp_status, 'bet_status': 'rolling', 'bet_color': 2, 'bet_roll': 13})
 
 type Mensagem struct {
 	ID_bet     string `json:"ID_bet"`
@@ -22,15 +20,14 @@ type Mensagem struct {
 func sendUDPMessage(payload *Payload) error {
 	serverAddr, err := net.ResolveUDPAddr("udp", address)
 	if err != nil {
-		return err
+		return fmt.Errorf("error connecting to websocket: %w", err)
 	}
 	conn, err := net.DialUDP("udp", nil, serverAddr)
 	if err != nil {
+		log.Printf("error writing ping message: %v", err)
 		return err
 	}
 	defer conn.Close()
-
-	//message := Mensagem{payload.IdBet, payload.Timestamp, payload.Status, payload.Color, payload.Roll}
 
 	message := Mensagem{
 		ID_bet:     payload.IdBet,
@@ -42,15 +39,13 @@ func sendUDPMessage(payload *Payload) error {
 
 	messageJson, err := json.Marshal(message)
 	if err != nil {
-		fmt.Println("Erro ao converter para JSON:", err)
-		return err
+		return fmt.Errorf("error connecting to websocket: %w", err)
 	}
 
 	_, err = conn.Write([]byte(messageJson))
 	if err != nil {
-		return err
+		return fmt.Errorf("error connecting to websocket: %w", err)
 	}
-	//fmt.Print(n)
-	//log.Print("message enviada : ", messageJson)
+
 	return nil
 }

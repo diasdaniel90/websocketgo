@@ -23,21 +23,24 @@ func writePing(conn *websocket.Conn) {
 		err := conn.WriteMessage(websocket.BinaryMessage, []byte(pingMessage))
 		if err != nil {
 			log.Printf("error writing ping message: %v", err)
+
 			return
 		}
+
 		log.Println("Ping enviado com sucesso")
 	}
 }
 
 func connect() (*websocket.Conn, error) {
-	fmt.Print("connect")
+	log.Print("connect")
+
 	dialer := websocket.Dialer{
-		HandshakeTimeout: 2 * time.Second,
+		HandshakeTimeout: writeWait,
 	}
 
 	conn, _, err := dialer.Dial(url, nil)
 	if err != nil {
-		return nil, fmt.Errorf("error connecting to websocket: %v", err)
+		return nil, fmt.Errorf("error connecting to websocket: %w", err)
 	}
 
 	// Envie uma mensagem de assinatura para o servidor
@@ -46,7 +49,9 @@ func connect() (*websocket.Conn, error) {
 	if err != nil {
 		log.Fatalf("Erro ao enviar mensagem: %s", err)
 	}
+
 	log.Println("Assinatura enviada com sucesso")
+
 	return conn, nil
 }
 
@@ -54,29 +59,33 @@ func readMessages(conn *websocket.Conn, msgChan chan []byte, errChan chan error)
 	for {
 		_, payload, err := conn.ReadMessage()
 		if err != nil {
-			errChan <- fmt.Errorf("error reading message: %v", err)
+			errChan <- fmt.Errorf("error reading message: %w", err)
 			return
-		} else {
-			if strings.Contains(string(payload), "double.tick") {
-				msgChan <- payload
-			}
+
+		} else if strings.Contains(string(payload), "double.tick") {
+			msgChan <- payload
 		}
 	}
 }
 
 func reconnect(conn *websocket.Conn, msgChan chan []byte, errChan chan error) {
 	log.Println("Conexão fechada pelo servidor, reconectando...")
+
 	err := conn.Close()
 	if err != nil {
 		log.Printf("error closing connection: %v", err)
 	}
-	time.Sleep(2 * time.Second)
+
+	time.Sleep(writeWait)
 	newConn, err := connect()
 	if err != nil {
-		errChan <- fmt.Errorf("error reconnecting to websocket: %v", err)
+		errChan <- fmt.Errorf("error reconnecting to websocket: %w", err)
 		return
 	}
+
 	log.Println("Conectado novamente!")
+
 	go readMessages(newConn, msgChan, errChan)
+
 	go writePing(newConn)
 }
