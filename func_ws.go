@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"strings"
 	"time"
@@ -71,7 +72,7 @@ func readMessages(conn *websocket.Conn, msgChan chan []byte, errChan chan error)
 	}
 }
 
-func reconnect(conn *websocket.Conn, msgChan chan []byte, errChan chan error) {
+func reconnect(conn io.Closer, msgChan chan []byte, errChan chan error) {
 	log.Println("Conexão fechada pelo servidor, reconectando...")
 
 	if err := conn.Close(); err != nil {

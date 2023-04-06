@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"os"
 )
 
@@ -15,22 +15,23 @@ type Config struct {
 	MySQLPort     string `json:"mySqlPort"`
 }
 
-func Envs() (*Config, error) {
+func EnvsDatabase() string {
 	file, err := os.ReadFile("config.json")
 	if err != nil {
-		return nil, fmt.Errorf("failed to read file: %w", err)
+		log.Printf("Erro ao ler arquivo: %s", err.Error())
+		// return fmt.Errorf("error connecting to websocket: %w", err)
+
+		panic(err.Error())
 	}
 
 	var cfg Config
 
 	err = json.Unmarshal(file, &cfg)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal JSON: %w", err)
+		log.Printf("Erro ao ler arquivo: %s", err.Error())
+		panic(err.Error())
 	}
 
-	return &cfg, nil
-}
-
-func (p Config) MysqlString() string {
-	return p.MySQLUser + ":" + p.MySQLPassword + "@tcp(" + p.MySQLHost + ":" + p.MySQLPort + ")/" + p.MySQLDatabase
+	return cfg.MySQLUser + ":" + cfg.MySQLPassword +
+		"@tcp(" + cfg.MySQLHost + ":" + cfg.MySQLPort + ")/" + cfg.MySQLDatabase
 }

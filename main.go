@@ -8,12 +8,7 @@ import (
 )
 
 func main() {
-	mysqlConfig, err := Envs()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	dbConexao, err := sql.Open("mysql", mysqlConfig.MysqlString())
+	dbConexao, err := sql.Open("mysql", EnvsDatabase())
 	if err != nil {
 		log.Fatal(err)
 	}
