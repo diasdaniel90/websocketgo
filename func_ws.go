@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"runtime"
 	"strings"
 	"time"
 
@@ -16,23 +17,6 @@ const (
 	pingMessage  = "2"
 	writeWait    = 2 * time.Second
 )
-
-func writePing(conn *websocket.Conn) {
-	ticker := time.NewTicker(pingInterval)
-
-	defer ticker.Stop()
-
-	for range ticker.C {
-		err := conn.WriteMessage(websocket.BinaryMessage, []byte(pingMessage))
-		if err != nil {
-			log.Printf("error writing ping message: %v", err)
-
-			return
-		}
-
-		log.Println("Ping enviado com sucesso")
-	}
-}
 
 func connect() (*websocket.Conn, error) {
 	log.Print("connect")
@@ -59,19 +43,6 @@ func connect() (*websocket.Conn, error) {
 	return conn, nil
 }
 
-func readMessages(conn *websocket.Conn, msgChan chan []byte, errChan chan error) {
-	for {
-		_, payload, err := conn.ReadMessage()
-		if err != nil {
-			errChan <- fmt.Errorf("error reading message: %w", err)
-
-			return
-		} else if strings.Contains(string(payload), "double.tick") {
-			msgChan <- payload
-		}
-	}
-}
-
 func reconnect(conn io.Closer, msgChan chan []byte, errChan chan error) {
 	log.Println("Conexão fechada pelo servidor, reconectando...")
 
@@ -89,8 +60,41 @@ func reconnect(conn io.Closer, msgChan chan []byte, errChan chan error) {
 	}
 
 	log.Println("Conectado novamente!")
+	log.Println("reconect", runtime.NumGoroutine())
 
 	go readMessages(newConn, msgChan, errChan)
-
 	go writePing(newConn)
+	log.Println("reconect2", runtime.NumGoroutine())
+}
+
+func readMessages(conn *websocket.Conn, msgChan chan []byte, errChan chan error) {
+	for {
+		_, payload, err := conn.ReadMessage()
+		if err != nil {
+			errChan <- fmt.Errorf("error reading message: %w", err)
+
+			return
+		} else if strings.Contains(string(payload), "double.tick") {
+			msgChan <- payload
+		}
+	}
+}
+
+func writePing(conn *websocket.Conn) {
+	log.Println("writePing")
+
+	ticker := time.NewTicker(pingInterval)
+
+	defer ticker.Stop()
+
+	for range ticker.C {
+		err := conn.WriteMessage(websocket.BinaryMessage, []byte(pingMessage))
+		if err != nil {
+			log.Printf("error writing ping message: %v", err)
+
+			return
+		}
+
+		log.Println("Ping enviado com sucesso")
+	}
 }

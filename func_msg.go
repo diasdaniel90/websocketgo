@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"runtime"
 	"time"
 )
 
@@ -70,6 +71,8 @@ type Bet struct {
 }
 
 func decodePayload(message []byte) (*Payload, error) {
+	log.Println("Gotoutine", runtime.NumGoroutine())
+
 	var data []json.RawMessage
 	if err := json.Unmarshal(message, &data); err != nil {
 		return nil, fmt.Errorf("error unmarshaling payload:: %w", err)

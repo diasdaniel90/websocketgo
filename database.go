@@ -43,7 +43,7 @@ func saveToDatabase(dbConexao *sql.DB, pload *Payload) error {
 		panic(err.Error())
 	}
 
-	log.Println("Dados inseridos com sucesso!")
+	log.Println("Dados de Status inseridos com sucesso!")
 
 	return nil
 }
@@ -82,7 +82,7 @@ func saveToDatabaseUsers(dbConexao *sql.DB, pload *Payload) error {
 		}
 	}
 
-	log.Println("Dados inseridos com sucesso!")
+	log.Println("Dados de User inseridos com sucesso!")
 
 	return nil
 }

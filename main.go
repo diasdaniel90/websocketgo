@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"log"
+	"runtime"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -26,6 +27,7 @@ func main() {
 
 	go readMessages(conn, msgChan, errChan)
 	go writePing(conn)
+	log.Println("main", runtime.NumGoroutine())
 
 	for {
 		select {
