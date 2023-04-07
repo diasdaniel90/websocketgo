@@ -16,8 +16,13 @@ var (
 )
 
 const (
-	layout  = "2006-01-02T15:04:05.000Z"
-	waiting = "waiting"
+	layout     = "2006-01-02T15:04:05.000Z"
+	waiting    = "waiting"
+	white      = 0
+	red        = 1
+	black      = 2
+	FatorWhite = 14
+	FatorColor = 2
 )
 
 type Payload struct {
@@ -50,12 +55,12 @@ func (p *Payload) calculateTotalBetsEur() {
 
 func (p *Payload) calculateTotalRetentionEur() {
 	switch p.Color {
-	case 1:
-		p.TotalRetentionEur = p.TotalEurBet - p.TotalRedEurBet*2
-	case 2:
-		p.TotalRetentionEur = p.TotalEurBet - p.TotalBlackEurBet*2
-	case 0:
-		p.TotalRetentionEur = p.TotalEurBet - p.TotalWhiteEurBet*14
+	case red:
+		p.TotalRetentionEur = p.TotalEurBet - p.TotalRedEurBet*FatorColor
+	case black:
+		p.TotalRetentionEur = p.TotalEurBet - p.TotalBlackEurBet*FatorColor
+	case white:
+		p.TotalRetentionEur = p.TotalEurBet - p.TotalWhiteEurBet*FatorWhite
 	}
 }
 
@@ -88,8 +93,10 @@ func decodePayload(message []byte) (*Payload, error) {
 	return &payload, nil
 }
 
-func filterMessage(dbConexao *sql.DB, payload *Payload) error {
+func filterMessage(dbConexao *sql.DB, payload *Payload) (*MsgStatus, error) {
 	// Verifica se a mensagem é duplicada com base no campo updated_at
+	var err error
+
 	if payload.Status != waiting && lastUpdatedAt != payload.UpdatedAt && lastID != payload.IDBet {
 		lastUpdatedAt = payload.UpdatedAt
 		lastID = payload.IDBet
@@ -100,25 +107,49 @@ func filterMessage(dbConexao *sql.DB, payload *Payload) error {
 		payload.calculateTotalBetsEur()
 		payload.calculateTotalRetentionEur()
 
-		if err := saveToDatabase(dbConexao, payload); err != nil {
-			return fmt.Errorf("error saveToDatabase: %w", err)
+		if err = saveToDatabase(dbConexao, payload); err != nil {
+			return nil, fmt.Errorf("error saveToDatabase: %w", err)
 		}
 
-		if err := sendUDPMessage(payload); err != nil {
-			return fmt.Errorf("error saveToDatabase: %w", err)
+		Status := MsgStatus{
+			IDBet:     payload.IDBet,
+			Timestamp: payload.Timestamp,
+			BetStatus: payload.Status,
+			BetColor:  payload.Color,
+			BetRoll:   payload.Roll,
 		}
+		// msgStatusChan <- Status
+		log.Println("#############################")
+
+		// if err := sendUDPMessage(payload); err != nil {
+		// 	fmt.Errorf("error saveToDatabase: %w", err)
+		// }
 
 		log.Println("Apostas fechadas e resultado")
+
+		return &Status, nil
 	} else if payload.Status == waiting && lastIDWaiting != payload.IDBet {
 		lastIDWaiting = payload.IDBet
 		tWaiting, _ := time.Parse(layout, payload.CreatedAt)
 		payload.Timestamp = tWaiting.Unix()
-		err := sendUDPMessage(payload)
-		if err != nil {
-			return fmt.Errorf("error connecting to websocket: %w", err)
-		}
+		// err := sendUDPMessage(payload)
+		// if err != nil {
+		// 	return fmt.Errorf("error connecting to websocket: %w", err)
+		// }
 		log.Println("Pronto para apostar")
+
+		Status := MsgStatus{
+			IDBet:     payload.IDBet,
+			Timestamp: payload.Timestamp,
+			BetStatus: payload.Status,
+			BetColor:  payload.Color,
+			BetRoll:   payload.Roll,
+		}
+		// msgStatusChan <- Status
+		log.Println("#############################")
+
+		return &Status, nil
 	}
 
-	return nil
+	return nil, err
 }
