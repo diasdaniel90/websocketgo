@@ -11,7 +11,9 @@ import (
 )
 
 func main() {
-	go listenUDP()
+	msgSignalChan := make(chan MsgSignal)
+
+	go listenUDP(msgSignalChan)
 
 	dbConexao, err := sql.Open("mysql", EnvsDatabase())
 	if err != nil {
@@ -30,7 +32,7 @@ func main() {
 	errChan := make(chan error)
 	msgStatusChan := make(chan MsgStatus)
 
-	go testeStatus(msgStatusChan)
+	go testeStatus(msgStatusChan, msgSignalChan)
 
 	go readMessages(conn, msgChan, errChan)
 	go writePing(conn)
@@ -53,11 +55,29 @@ type MsgStatus struct {
 	BetRoll   int    `json:"betRoll"`
 }
 
-func testeStatus(msgStatusChan <-chan MsgStatus) {
+func testeStatus(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal) {
 	log.Println("###########11##################")
 
-	for msg := range msgStatusChan {
-		log.Println("chegou na go func de aposta", msg)
+	for {
+		select {
+		case msg, ok := <-msgStatusChan:
+			if !ok {
+				log.Println("Canal msgStatusChan fechado")
+
+				return
+			}
+
+			log.Println("chegou na go func de aposta", msg)
+
+		case signal, ok := <-msgSignalChan:
+			if !ok {
+				log.Println("Canal msgSignalChan fechado")
+
+				return
+			}
+
+			log.Println("Recebeu sinal", signal)
+		}
 	}
 }
 

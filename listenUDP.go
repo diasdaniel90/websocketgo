@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net"
 )
@@ -11,7 +12,7 @@ const (
 	Size = 1024
 )
 
-func listenUDP() {
+func listenUDP(msgSignalChan chan MsgSignal) {
 	ipv4 := net.ParseIP(Host)
 
 	conn, err := net.ListenUDP("udp", &net.UDPAddr{IP: ipv4, Port: Port, Zone: ""})
@@ -33,5 +34,23 @@ func listenUDP() {
 		}
 
 		log.Printf("Received %d bytes from %s: %s\n", nBytes, addr.String(), string(buf[:nBytes]))
+
+		var msgSignal MsgSignal
+
+		err = json.Unmarshal((buf[:nBytes]), &msgSignal)
+		if err != nil {
+			log.Printf("Erro ao ler arquivo: %s", err.Error())
+			panic(err.Error())
+		}
+
+		log.Println(msgSignal)
+		msgSignalChan <- msgSignal
 	}
+}
+
+type MsgSignal struct {
+	Type      string `json:"idBet"`
+	Timestamp int64  `json:"timestamp"`
+	BetColor  int    `json:"betColor"`
+	Source    string `json:"source"`
 }
