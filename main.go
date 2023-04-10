@@ -35,7 +35,7 @@ func main() {
 	go testeStatus(msgStatusChan, msgSignalChan)
 
 	go readMessages(conn, msgChan, errChan)
-	go writePing(conn)
+	// go writePing(conn)
 	log.Println("main", runtime.NumGoroutine())
 
 	var wg sync.WaitGroup

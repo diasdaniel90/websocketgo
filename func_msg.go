@@ -125,7 +125,7 @@ func filterMessage(dbConexao *sql.DB, payload *Payload) (*MsgStatus, error) {
 		// 	fmt.Errorf("error saveToDatabase: %w", err)
 		// }
 
-		log.Println("Apostas fechadas e resultado")
+		log.Println("filterMessage Apostas fechadas e resultado")
 
 		return &Status, nil
 	} else if payload.Status == waiting && lastIDWaiting != payload.IDBet {
@@ -136,7 +136,7 @@ func filterMessage(dbConexao *sql.DB, payload *Payload) (*MsgStatus, error) {
 		// if err != nil {
 		// 	return fmt.Errorf("error connecting to websocket: %w", err)
 		// }
-		log.Println("Pronto para apostar")
+		log.Println("filterMessage Pronto para apostar")
 
 		Status := MsgStatus{
 			IDBet:     payload.IDBet,
