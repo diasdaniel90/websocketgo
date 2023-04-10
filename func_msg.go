@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"runtime"
 	"time"
 )
 
@@ -76,7 +75,7 @@ type Bet struct {
 }
 
 func decodePayload(message []byte) (*Payload, error) {
-	log.Println("Gotoutine", runtime.NumGoroutine())
+	// log.Println("Gotoutine", runtime.NumGoroutine())
 
 	var data []json.RawMessage
 	if err := json.Unmarshal(message, &data); err != nil {
@@ -119,11 +118,6 @@ func filterMessage(dbConexao *sql.DB, payload *Payload) (*MsgStatus, error) {
 			BetRoll:   payload.Roll,
 		}
 		// msgStatusChan <- Status
-		log.Println("#############################")
-
-		// if err := sendUDPMessage(payload); err != nil {
-		// 	fmt.Errorf("error saveToDatabase: %w", err)
-		// }
 
 		log.Println("filterMessage Apostas fechadas e resultado")
 
@@ -132,11 +126,6 @@ func filterMessage(dbConexao *sql.DB, payload *Payload) (*MsgStatus, error) {
 		lastIDWaiting = payload.IDBet
 		tWaiting, _ := time.Parse(layout, payload.CreatedAt)
 		payload.Timestamp = tWaiting.Unix()
-		// err := sendUDPMessage(payload)
-		// if err != nil {
-		// 	return fmt.Errorf("error connecting to websocket: %w", err)
-		// }
-		log.Println("filterMessage Pronto para apostar")
 
 		Status := MsgStatus{
 			IDBet:     payload.IDBet,
@@ -145,8 +134,6 @@ func filterMessage(dbConexao *sql.DB, payload *Payload) (*MsgStatus, error) {
 			BetColor:  payload.Color,
 			BetRoll:   payload.Roll,
 		}
-		// msgStatusChan <- Status
-		log.Println("#############################")
 
 		return &Status, nil
 	}

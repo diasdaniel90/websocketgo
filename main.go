@@ -35,7 +35,7 @@ func main() {
 	go testeStatus(msgStatusChan, msgSignalChan)
 
 	go readMessages(conn, msgChan, errChan)
-	// go writePing(conn)
+	go writePing(conn)
 	log.Println("main", runtime.NumGoroutine())
 
 	var wg sync.WaitGroup
@@ -58,6 +58,8 @@ type MsgStatus struct {
 func testeStatus(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal) {
 	log.Println("###########11##################")
 
+	mensagens := []MsgSignal{}
+
 	for {
 		select {
 		case msg, ok := <-msgStatusChan:
@@ -68,15 +70,17 @@ func testeStatus(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal)
 			}
 
 			log.Println("chegou na go func de aposta", msg)
-
-		case signal, ok := <-msgSignalChan:
+			log.Println("Recebeu sinal msgStatusChan ", mensagens)
+		case signalMsg, ok := <-msgSignalChan:
 			if !ok {
 				log.Println("Canal msgSignalChan fechado")
 
 				return
 			}
 
-			log.Println("Recebeu sinal", signal)
+			mensagens = append(mensagens, signalMsg)
+			log.Println("Recebeu sinal msgSignalChan", mensagens)
+			log.Println("Recebeu sinal ", signalMsg)
 		}
 	}
 }
