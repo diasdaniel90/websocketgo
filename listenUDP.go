@@ -47,10 +47,3 @@ func listenUDP(msgSignalChan chan MsgSignal) {
 		msgSignalChan <- msgSignal
 	}
 }
-
-type MsgSignal struct {
-	Type      string `json:"idBet"`
-	Timestamp int64  `json:"timestamp"`
-	BetColor  int    `json:"betColor"`
-	Source    string `json:"source"`
-}

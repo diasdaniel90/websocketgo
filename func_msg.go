@@ -8,12 +8,6 @@ import (
 	"time"
 )
 
-type LastMsg struct {
-	LastUpdatedAt string `json:"lastUpdatedAt"`
-	LastID        string `json:"lastid"`
-	LastIDWaiting string `json:"lastidwaiting"`
-}
-
 const (
 	layout     = "2006-01-02T15:04:05.000Z"
 	waiting    = "waiting"
@@ -23,26 +17,6 @@ const (
 	FatorWhite = 14
 	FatorColor = 2
 )
-
-type Payload struct {
-	IDBet                string  `json:"id"`
-	Color                int     `json:"color"`
-	Roll                 int     `json:"roll"`
-	CreatedAt            string  `json:"created_at"`
-	Timestamp            int64   `json:"timestamp"`
-	UpdatedAt            string  `json:"updated_at"`
-	Status               string  `json:"status"`
-	TotalRedEurBet       float64 `json:"total_red_eur_bet"`
-	TotalRedBetsPlaced   int     `json:"total_red_bets_placed"`
-	TotalWhiteEurBet     float64 `json:"total_white_eur_bet"`
-	TotalWhiteBetsPlaced int     `json:"total_white_bets_placed"`
-	TotalBlackEurBet     float64 `json:"total_black_eur_bet"`
-	TotalBlackBetsPlaced int     `json:"total_black_bets_placed"`
-	TotalBetsPlaced      int     `json:"totalBetsPlaced"`
-	TotalEurBet          float64 `json:"totalEurBet"`
-	TotalRetentionEur    float64 `json:"totalRetentionEur"`
-	Bets                 []Bet   `json:"bets"`
-}
 
 func (p *Payload) calculateTotalBetsPlaced() {
 	p.TotalBetsPlaced = p.TotalRedBetsPlaced + p.TotalWhiteBetsPlaced + p.TotalBlackBetsPlaced
@@ -61,17 +35,6 @@ func (p *Payload) calculateTotalRetentionEur() {
 	case white:
 		p.TotalRetentionEur = p.TotalEurBet - p.TotalWhiteEurBet*FatorWhite
 	}
-}
-
-type Bet struct {
-	IDBetUser    string  `json:"id"`
-	Color        int     `json:"color"`
-	Amount       float32 `json:"amount"`
-	CurrencyType string  `json:"currency_type"`
-	Status       string  `json:"status"`
-	User         struct {
-		IDStr string `json:"id_str"`
-	} `json:"user"`
 }
 
 func decodePayload(message []byte) (*Payload, error) {

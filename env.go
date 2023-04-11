@@ -6,15 +6,6 @@ import (
 	"os"
 )
 
-type Config struct {
-	EnvRef        string `json:"envRef"`
-	MySQLDatabase string `json:"mySqlDatabase"`
-	MySQLUser     string `json:"mySqlUser"`
-	MySQLPassword string `json:"mySqlPassword"`
-	MySQLHost     string `json:"mySqlHost"`
-	MySQLPort     string `json:"mySqlPort"`
-}
-
 func EnvsDatabase() string {
 	file, err := os.ReadFile("config.json")
 	if err != nil {

@@ -47,14 +47,6 @@ func main() {
 	wg.Wait()
 }
 
-type MsgStatus struct {
-	IDBet     string `json:"idBet"`
-	Timestamp int64  `json:"timestamp"`
-	BetStatus string `json:"betStatus"`
-	BetColor  int    `json:"betColor"`
-	BetRoll   int    `json:"betRoll"`
-}
-
 func testeStatus(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal) {
 	log.Println("###########11##################")
 
@@ -75,6 +67,7 @@ func testeStatus(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal)
 			log.Println("chegou na go func de aposta", msg.BetStatus)
 
 			log.Println("Recebeu sinal msgStatusChan ", mensagens)
+
 		case signalMsg, ok := <-msgSignalChan:
 			if !ok {
 				log.Println("Canal msgSignalChan fechado")
