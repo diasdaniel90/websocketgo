@@ -15,11 +15,13 @@ func saveToDatabase(dbConexao *sql.DB, pload *Payload) error {
 		"SELECT EXISTS(SELECT id_bet FROM api_serverresult WHERE id_bet = ?)",
 		pload.IDBet).Scan(&exists)
 	if err != nil {
-		return fmt.Errorf("error connecting to websocket: %w", err)
+		return fmt.Errorf("error SELECT EXISTS: %w", err)
 	}
 
 	if exists {
-		return fmt.Errorf("error connecting to websocket: %w", err)
+		log.Println("aviso registro já existe")
+
+		return nil
 	}
 
 	// Preparar o command SQL para inserir dados na tabela
@@ -56,11 +58,11 @@ func saveToDatabaseUsers(dbConexao *sql.DB, pload *Payload) error {
 			"SELECT EXISTS(SELECT ID_bet_uniqa FROM api_userresult WHERE ID_bet_uniqa = ?)",
 			bet.IDBetUser).Scan(&exists)
 		if err != nil {
-			return fmt.Errorf("error connecting to websocket: %w", err)
+			return fmt.Errorf("error SELECT EXISTS: %w", err)
 		}
 
 		if exists {
-			// log.Println("registro já existe")
+			// log.Println("registro de user  já existe")
 			return nil
 		}
 
@@ -81,8 +83,6 @@ func saveToDatabaseUsers(dbConexao *sql.DB, pload *Payload) error {
 			panic(err.Error())
 		}
 	}
-
-	log.Println("Dados de User inseridos com sucesso!")
 
 	return nil
 }

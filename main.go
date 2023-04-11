@@ -24,7 +24,7 @@ func main() {
 
 	conn, err := connect()
 	if err != nil {
-		log.Printf("error connecting to websocket: %v", err)
+		log.Printf("error connect() to websocket: %v", err)
 	}
 	defer conn.Close()
 
@@ -59,7 +59,7 @@ func testeStatus(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal)
 	log.Println("###########11##################")
 
 	mensagens := []MsgSignal{}
-
+	var valido string
 	for {
 		select {
 		case msg, ok := <-msgStatusChan:
@@ -69,7 +69,11 @@ func testeStatus(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal)
 				return
 			}
 
-			log.Println("chegou na go func de aposta", msg)
+			if valido == msg.BetStatus {
+			}
+
+			log.Println("chegou na go func de aposta", msg.BetStatus)
+
 			log.Println("Recebeu sinal msgStatusChan ", mensagens)
 		case signalMsg, ok := <-msgSignalChan:
 			if !ok {
@@ -90,6 +94,8 @@ func teste(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChan chan [
 ) {
 	defer wg.Done()
 
+	var lastMsg LastMsg
+
 	for {
 		select {
 		case msg := <-msgChan:
@@ -100,7 +106,7 @@ func teste(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChan chan [
 				return
 			}
 
-			Status, err := filterMessage(dbConexao, payload)
+			Status, err := filterMessage(dbConexao, payload, &lastMsg)
 			if err != nil {
 				log.Printf("Erro ao filtrar mensagem: %s", err.Error())
 

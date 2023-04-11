@@ -8,11 +8,17 @@ import (
 	"time"
 )
 
-var (
-	lastUpdatedAt = "revive"
-	lastID        = "revive"
-	lastIDWaiting = "revive"
-)
+type LastMsg struct {
+	LastUpdatedAt string `json:"lastUpdatedAt"`
+	LastID        string `json:"lastid"`
+	LastIDWaiting string `json:"lastidwaiting"`
+}
+
+// var (
+// 	lastUpdatedAt = "revive"
+// 	lastID        = "revive"
+// 	lastIDWaiting = "revive"
+// )
 
 const (
 	layout     = "2006-01-02T15:04:05.000Z"
@@ -76,7 +82,6 @@ type Bet struct {
 
 func decodePayload(message []byte) (*Payload, error) {
 	// log.Println("Gotoutine", runtime.NumGoroutine())
-
 	var data []json.RawMessage
 	if err := json.Unmarshal(message, &data); err != nil {
 		return nil, fmt.Errorf("error unmarshaling payload:: %w", err)
@@ -92,13 +97,15 @@ func decodePayload(message []byte) (*Payload, error) {
 	return &payload, nil
 }
 
-func filterMessage(dbConexao *sql.DB, payload *Payload) (*MsgStatus, error) {
+func filterMessage(dbConexao *sql.DB, payload *Payload, lastMsg *LastMsg) (*MsgStatus, error) {
 	// Verifica se a mensagem é duplicada com base no campo updated_at
 	var err error
 
-	if payload.Status != waiting && lastUpdatedAt != payload.UpdatedAt && lastID != payload.IDBet {
-		lastUpdatedAt = payload.UpdatedAt
-		lastID = payload.IDBet
+	if payload.Status != waiting && lastMsg.LastUpdatedAt != payload.UpdatedAt && lastMsg.LastID != payload.IDBet {
+		// lastUpdatedAt = payload.UpdatedAt
+		lastMsg.LastUpdatedAt = payload.UpdatedAt
+		// lastID = payload.IDBet
+		lastMsg.LastID = payload.IDBet
 		tComplete, _ := time.Parse(layout, payload.CreatedAt)
 		payload.Timestamp = tComplete.Unix()
 
@@ -122,8 +129,9 @@ func filterMessage(dbConexao *sql.DB, payload *Payload) (*MsgStatus, error) {
 		log.Println("filterMessage Apostas fechadas e resultado")
 
 		return &Status, nil
-	} else if payload.Status == waiting && lastIDWaiting != payload.IDBet {
-		lastIDWaiting = payload.IDBet
+	} else if payload.Status == waiting && lastMsg.LastIDWaiting != payload.IDBet {
+		// lastIDWaiting = payload.IDBet
+		lastMsg.LastIDWaiting = payload.IDBet
 		tWaiting, _ := time.Parse(layout, payload.CreatedAt)
 		payload.Timestamp = tWaiting.Unix()
 
@@ -134,6 +142,7 @@ func filterMessage(dbConexao *sql.DB, payload *Payload) (*MsgStatus, error) {
 			BetColor:  payload.Color,
 			BetRoll:   payload.Roll,
 		}
+		log.Println("filterMessage pronto para apostar")
 
 		return &Status, nil
 	}

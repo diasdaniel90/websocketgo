@@ -27,7 +27,7 @@ func connect() (*websocket.Conn, error) {
 
 	conn, _, err := dialer.Dial(url, nil)
 	if err != nil {
-		return nil, fmt.Errorf("error connecting to websocket: %w", err)
+		return nil, fmt.Errorf("error dialer.Dial websocket: %w", err)
 	}
 
 	// Envie uma mensagem de assinatura para o servidor

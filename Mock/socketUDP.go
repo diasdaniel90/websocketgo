@@ -46,12 +46,12 @@ func sendUDPMessage(message *MsgSignal) error {
 
 	messageJSON, err := json.Marshal(message)
 	if err != nil {
-		return fmt.Errorf("error connecting to websocket: %w", err)
+		return fmt.Errorf("error  json.Marshal(message): %w", err)
 	}
 
 	_, err = conn.Write(messageJSON)
 	if err != nil {
-		return fmt.Errorf("error connecting to websocket: %w", err)
+		return fmt.Errorf("error send udp: %w", err)
 	}
 
 	return nil

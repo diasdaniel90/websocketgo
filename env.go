@@ -19,7 +19,7 @@ func EnvsDatabase() string {
 	file, err := os.ReadFile("config.json")
 	if err != nil {
 		log.Printf("Erro ao ler arquivo: %s", err.Error())
-		// return fmt.Errorf("error connecting to websocket: %w", err)
+		// return fmt.Errorf("Erro ao ler arquivo: %w", err)
 
 		panic(err.Error())
 	}
