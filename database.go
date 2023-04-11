@@ -62,10 +62,13 @@ func saveToDatabaseUsers(dbConexao *sql.DB, pload *Payload) error {
 		}
 
 		if exists {
-			// log.Println("registro de user  já existe")
-			return nil
-		}
+			// log.Println("registro de user  já existe", bet.IDBetUser)
 
+			// defer dbConexao.Close()
+
+			continue
+		}
+		// log.Println("vai gravar ", bet.IDBetUser)
 		tBetUser, _ := time.Parse(layout, pload.CreatedAt)
 		pload.Timestamp = tBetUser.Unix()
 
@@ -82,6 +85,8 @@ func saveToDatabaseUsers(dbConexao *sql.DB, pload *Payload) error {
 		if err != nil {
 			panic(err.Error())
 		}
+
+		log.Println("registro do user inserido com sucesso")
 	}
 
 	return nil
