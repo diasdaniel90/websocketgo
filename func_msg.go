@@ -14,12 +14,6 @@ type LastMsg struct {
 	LastIDWaiting string `json:"lastidwaiting"`
 }
 
-// var (
-// 	lastUpdatedAt = "revive"
-// 	lastID        = "revive"
-// 	lastIDWaiting = "revive"
-// )
-
 const (
 	layout     = "2006-01-02T15:04:05.000Z"
 	waiting    = "waiting"
@@ -102,9 +96,7 @@ func filterMessage(dbConexao *sql.DB, payload *Payload, lastMsg *LastMsg) (*MsgS
 	var err error
 
 	if payload.Status != waiting && lastMsg.LastUpdatedAt != payload.UpdatedAt && lastMsg.LastID != payload.IDBet {
-		// lastUpdatedAt = payload.UpdatedAt
 		lastMsg.LastUpdatedAt = payload.UpdatedAt
-		// lastID = payload.IDBet
 		lastMsg.LastID = payload.IDBet
 		tComplete, _ := time.Parse(layout, payload.CreatedAt)
 		payload.Timestamp = tComplete.Unix()
@@ -130,7 +122,6 @@ func filterMessage(dbConexao *sql.DB, payload *Payload, lastMsg *LastMsg) (*MsgS
 
 		return &Status, nil
 	} else if payload.Status == waiting && lastMsg.LastIDWaiting != payload.IDBet {
-		// lastIDWaiting = payload.IDBet
 		lastMsg.LastIDWaiting = payload.IDBet
 		tWaiting, _ := time.Parse(layout, payload.CreatedAt)
 		payload.Timestamp = tWaiting.Unix()

@@ -59,7 +59,7 @@ func testeStatus(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal)
 	log.Println("###########11##################")
 
 	mensagens := []MsgSignal{}
-	var valido string
+	// var valido string
 	for {
 		select {
 		case msg, ok := <-msgStatusChan:
@@ -69,8 +69,8 @@ func testeStatus(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal)
 				return
 			}
 
-			if valido == msg.BetStatus {
-			}
+			// if valido == msg.BetStatus {
+			// }
 
 			log.Println("chegou na go func de aposta", msg.BetStatus)
 
