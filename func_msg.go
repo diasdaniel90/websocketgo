@@ -95,7 +95,8 @@ func filterMessage(dbConexao *sql.DB, payload *Payload, lastMsg *LastMsg) (*MsgS
 	// Verifica se a mensagem é duplicada com base no campo updated_at
 	var err error
 
-	if payload.Status != waiting && lastMsg.LastUpdatedAt != payload.UpdatedAt && lastMsg.LastID != payload.IDBet {
+	if payload.Status != waiting && lastMsg.LastUpdatedAt != payload.UpdatedAt &&
+		lastMsg.LastID != payload.IDBet && lastMsg.LastIDWaiting == payload.IDBet {
 		lastMsg.LastUpdatedAt = payload.UpdatedAt
 		lastMsg.LastID = payload.IDBet
 		tComplete, _ := time.Parse(layout, payload.CreatedAt)

@@ -63,9 +63,7 @@ func saveToDatabaseUsers(dbConexao *sql.DB, pload *Payload) error {
 
 		if exists {
 			// log.Println("registro de user  já existe", bet.IDBetUser)
-
 			// defer dbConexao.Close()
-
 			continue
 		}
 		// log.Println("vai gravar ", bet.IDBetUser)
