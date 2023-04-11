@@ -32,7 +32,7 @@ func main() {
 	errChan := make(chan error)
 	msgStatusChan := make(chan MsgStatus)
 
-	go testeStatus(msgStatusChan, msgSignalChan)
+	go BetStatus(msgStatusChan, msgSignalChan)
 
 	go readMessages(conn, msgChan, errChan)
 	go writePing(conn)
@@ -42,12 +42,12 @@ func main() {
 
 	wg.Add(1)
 
-	go teste(&wg, conn, dbConexao, msgChan, errChan, msgStatusChan)
+	go ControlMsg(&wg, conn, dbConexao, msgChan, errChan, msgStatusChan)
 
 	wg.Wait()
 }
 
-func testeStatus(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal) {
+func BetStatus(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal) {
 	log.Println("###########11##################")
 
 	mensagens := []MsgSignal{}
@@ -82,7 +82,7 @@ func testeStatus(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal)
 	}
 }
 
-func teste(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChan chan []byte,
+func ControlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChan chan []byte,
 	errChan chan error, msgStatusChan chan MsgStatus,
 ) {
 	defer wg.Done()
