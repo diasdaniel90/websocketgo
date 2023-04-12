@@ -106,15 +106,6 @@ func controlBet(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal) 
 	}
 }
 
-type BetBot struct {
-	IDBet     string `json:"idBet"`
-	Timestamp int64  `json:"timestamp"`
-	Color     int    `json:"betColor"`
-	Source    string `json:"source"`
-	Win       bool   `json:"win"`
-	status    bool
-}
-
 func sinal2Playbet(signals *[]MsgSignal, msgStatus MsgStatus, bets *[]BetBot) {
 	log.Println("Executando a função após 4 segundos...", signals, msgStatus)
 

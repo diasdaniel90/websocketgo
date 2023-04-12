@@ -1,5 +1,14 @@
 package main
 
+type BetBot struct {
+	IDBet     string `json:"idBet"`
+	Timestamp int64  `json:"timestamp"`
+	Color     int    `json:"betColor"`
+	Source    string `json:"source"`
+	Win       bool   `json:"win"`
+	status    bool
+}
+
 type MsgStatus struct {
 	IDBet     string `json:"idBet"`
 	Timestamp int64  `json:"timestamp"`
