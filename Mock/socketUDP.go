@@ -18,7 +18,7 @@ type MsgSignal struct {
 
 func main() {
 	message := &MsgSignal{
-		Type:      "a",
+		Type:      "realtime",
 		Timestamp: 111,
 		BetColor:  1,
 		Source:    "2",

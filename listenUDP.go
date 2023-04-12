@@ -26,14 +26,14 @@ func listenUDP(msgSignalChan chan MsgSignal) {
 	buf := make([]byte, Size)
 
 	for {
-		nBytes, addr, err := conn.ReadFromUDP(buf)
+		nBytes, _, err := conn.ReadFromUDP(buf)
 		if err != nil {
 			log.Println("Error:", err)
 
 			continue
 		}
 
-		log.Printf("Received %d bytes from %s: %s\n", nBytes, addr.String(), string(buf[:nBytes]))
+		// log.Printf("Received %d bytes from %s: %s\n", nBytes, addr.String(), string(buf[:nBytes]))
 
 		var msgSignal MsgSignal
 

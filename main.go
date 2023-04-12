@@ -54,29 +54,27 @@ func BetStatus(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal) {
 	log.Println("###########11##################")
 
 	mensagens := []MsgSignal{}
+	bets := []BetBot{}
 	// var valido string
 	for {
 		select {
-		case msg, ok := <-msgStatusChan:
+		case msgStatusReceived, ok := <-msgStatusChan:
 			if !ok {
 				log.Println("Canal msgStatusChan fechado")
 
 				return
 			}
 
-			log.Println("msgStatusChan", msg)
+			if msgStatusReceived.BetStatus == waiting {
+				time.AfterFunc(tempoEspera*time.Second, func() {
+					go ControBet(&mensagens, msgStatusReceived, &bets)
+				})
+			}
 
-			// if valido == msg.BetStatus {
-			// }
-			// if msg.BetStatus == waiting {
-			// 	log.Println("------+++++++++#######vai esperar 6 segundos ")
-			// 	time.Sleep(6 * time.Second)
-			// }
-
-			time.AfterFunc(tempoEspera*time.Second, func() {
-				ControBet(mensagens)
-				// log.Println("+++++Recebeu os sinais na msgStatusChan ", mensagens)
-			})
+			if msgStatusReceived.BetStatus != waiting {
+				log.Println("resultado", bets)
+				bets = []BetBot{}
+			}
 
 		case signalMsg, ok := <-msgSignalChan:
 			if !ok {
@@ -96,8 +94,20 @@ func BetStatus(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal) {
 	}
 }
 
-func ControBet(mensagens []MsgSignal) {
-	log.Println("Executando a função após 4 segundos...", mensagens)
+type BetBot struct {
+	IDBet     string `json:"idBet"`
+	Timestamp int64  `json:"timestamp"`
+	BetColor  int    `json:"betColor"`
+	Source    string `json:"source"`
+	Win       bool   `json:"win"`
+}
+
+func ControBet(signals *[]MsgSignal, msgStatus MsgStatus, bets *[]BetBot) {
+	log.Println("Executando a função após 4 segundos...", signals, msgStatus)
+
+	*signals = []MsgSignal{}
+
+	log.Println("apostas feitas", bets)
 }
 
 func ControlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChan chan []byte,

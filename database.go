@@ -45,7 +45,7 @@ func saveToDatabase(dbConexao *sql.DB, pload *Payload) error {
 		panic(err.Error())
 	}
 
-	log.Println("Dados de Status inseridos com sucesso!")
+	// log.Println("Dados de Status inseridos com sucesso!")
 
 	return nil
 }
