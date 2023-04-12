@@ -6,9 +6,12 @@ import (
 	"log"
 	"runtime"
 	"sync"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
+
+const tempoEspera = 4
 
 func main() {
 	msgSignalChan := make(chan MsgSignal)
@@ -61,12 +64,19 @@ func BetStatus(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal) {
 				return
 			}
 
+			log.Println("msgStatusChan", msg)
+
 			// if valido == msg.BetStatus {
 			// }
+			// if msg.BetStatus == waiting {
+			// 	log.Println("------+++++++++#######vai esperar 6 segundos ")
+			// 	time.Sleep(6 * time.Second)
+			// }
 
-			log.Println("chegou na go func de aposta", msg.BetStatus)
-
-			log.Println("Recebeu sinal msgStatusChan ", mensagens)
+			time.AfterFunc(tempoEspera*time.Second, func() {
+				ControBet(mensagens)
+				// log.Println("+++++Recebeu os sinais na msgStatusChan ", mensagens)
+			})
 
 		case signalMsg, ok := <-msgSignalChan:
 			if !ok {
@@ -74,12 +84,20 @@ func BetStatus(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal) {
 
 				return
 			}
-
+			// log.Println("Recebeu sinal msgSignalChan", mensagens)
+			// log.Println("Recebeu sinal ", signalMsg)
 			mensagens = append(mensagens, signalMsg)
-			log.Println("Recebeu sinal msgSignalChan", mensagens)
-			log.Println("Recebeu sinal ", signalMsg)
+
+		default:
+			// Faça algo aqui se ambos os canais estiverem vazios.
+			// Por exemplo, tente novamente mais tarde.
+			time.Sleep(100 * time.Millisecond)
 		}
 	}
+}
+
+func ControBet(mensagens []MsgSignal) {
+	log.Println("Executando a função após 4 segundos...", mensagens)
 }
 
 func ControlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChan chan []byte,

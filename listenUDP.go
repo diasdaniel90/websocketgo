@@ -39,11 +39,11 @@ func listenUDP(msgSignalChan chan MsgSignal) {
 
 		err = json.Unmarshal((buf[:nBytes]), &msgSignal)
 		if err != nil {
-			log.Printf("Erro ao ler arquivo: %s", err.Error())
+			log.Printf("Erro ao ler buffer UDP: %s", err.Error())
 			panic(err.Error())
 		}
 
-		log.Println(msgSignal)
+		// log.Println(msgSignal)
 		msgSignalChan <- msgSignal
 	}
 }

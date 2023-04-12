@@ -83,8 +83,7 @@ func saveToDatabaseUsers(dbConexao *sql.DB, pload *Payload) error {
 		if err != nil {
 			panic(err.Error())
 		}
-
-		log.Println("registro do user inserido com sucesso")
+		// log.Println("registro do user inserido com sucesso")
 	}
 
 	return nil
