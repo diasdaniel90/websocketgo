@@ -52,6 +52,13 @@ func saveToDatabase(dbConexao *sql.DB, pload *Payload) error {
 
 func saveToDatabaseUsers(dbConexao *sql.DB, pload *Payload) error {
 	// defer dbConexao.Close()
+	stmt, err := dbConexao.Prepare(
+		"INSERT INTO api_userresult" +
+			"(ID_bet, ID_bet_uniqa, `timestamp`, color, amount, currency_type,user) VALUES (?, ?, ?, ?, ?, ?, ?)")
+	if err != nil {
+		panic(err.Error())
+	}
+	defer stmt.Close()
 
 	for _, bet := range pload.Bets {
 		var exists bool
@@ -71,14 +78,6 @@ func saveToDatabaseUsers(dbConexao *sql.DB, pload *Payload) error {
 		// log.Println("vai gravar ", bet.IDBetUser)
 		tBetUser, _ := time.Parse(layout, pload.CreatedAt)
 		pload.Timestamp = tBetUser.Unix()
-
-		stmt, err := dbConexao.Prepare(
-			"INSERT INTO api_userresult" +
-				"(ID_bet, ID_bet_uniqa, `timestamp`, color, amount, currency_type,user) VALUES (?, ?, ?, ?, ?, ?, ?)")
-		if err != nil {
-			panic(err.Error())
-		}
-		defer stmt.Close()
 
 		_, err = stmt.Exec(
 			pload.IDBet, bet.IDBetUser, pload.Timestamp, bet.Color, bet.Amount, bet.CurrencyType, bet.User.IDStr)
