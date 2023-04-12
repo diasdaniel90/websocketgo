@@ -12,7 +12,7 @@ const address = "127.0.0.1:1234"
 type MsgSignal struct {
 	Type      string `json:"idBet"`
 	Timestamp int64  `json:"timestamp"`
-	BetColor  int    `json:"betColor"`
+	Color     int    `json:"betColor"`
 	Source    string `json:"source"`
 }
 
@@ -20,7 +20,7 @@ func main() {
 	message := &MsgSignal{
 		Type:      "realtime",
 		Timestamp: 111,
-		BetColor:  1,
+		Color:     1,
 		Source:    "2",
 	}
 
