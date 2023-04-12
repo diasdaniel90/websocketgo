@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func EnvsDatabase() string {
+func envsDatabase() string {
 	file, err := os.ReadFile("config.json")
 	if err != nil {
 		log.Printf("Erro ao ler arquivo: %s", err.Error())

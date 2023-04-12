@@ -9,7 +9,7 @@ import (
 
 const address = "127.0.0.1:1234"
 
-type MsgSignal struct {
+type msgSignal struct {
 	Type      string `json:"idBet"`
 	Timestamp int64  `json:"timestamp"`
 	Color     int    `json:"betColor"`
@@ -17,14 +17,14 @@ type MsgSignal struct {
 }
 
 func main() {
-	message := &MsgSignal{
+	message := &msgSignal{
 		Type:      "realtime",
 		Timestamp: 111,
 		Color:     1,
 		Source:    "fonte_1",
 	}
 
-	message2 := &MsgSignal{
+	message2 := &msgSignal{
 		Type:      "realtime",
 		Timestamp: 222,
 		Color:     2,
@@ -40,7 +40,7 @@ func main() {
 	}
 }
 
-func sendUDPMessage(message *MsgSignal) error {
+func sendUDPMessage(message *msgSignal) error {
 	log.Println(message)
 
 	serverAddr, err := net.ResolveUDPAddr("udp", address)

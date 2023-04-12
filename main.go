@@ -18,7 +18,7 @@ func main() {
 
 	go listenUDP(msgSignalChan)
 
-	dbConexao, err := sql.Open("mysql", EnvsDatabase())
+	dbConexao, err := sql.Open("mysql", envsDatabase())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -35,7 +35,7 @@ func main() {
 	errChan := make(chan error)
 	msgStatusChan := make(chan MsgStatus)
 
-	go ControlBet(msgStatusChan, msgSignalChan)
+	go controlBet(msgStatusChan, msgSignalChan)
 
 	go readMessages(conn, msgChan, errChan)
 	go writePing(conn)
@@ -45,12 +45,12 @@ func main() {
 
 	wg.Add(1)
 
-	go ControlMsg(&wg, conn, dbConexao, msgChan, errChan, msgStatusChan)
+	go controlMsg(&wg, conn, dbConexao, msgChan, errChan, msgStatusChan)
 
 	wg.Wait()
 }
 
-func ControlBet(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal) {
+func controlBet(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal) {
 	log.Println("###########11##################")
 
 	mensagens := []MsgSignal{}
@@ -67,7 +67,7 @@ func ControlBet(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal) 
 
 			if msgStatusRec.BetStatus == waiting {
 				time.AfterFunc(tempoEspera*time.Second, func() {
-					go Sinal2Playbet(&mensagens, msgStatusRec, &bets)
+					go sinal2Playbet(&mensagens, msgStatusRec, &bets)
 				})
 			}
 
@@ -112,10 +112,10 @@ type BetBot struct {
 	Color     int    `json:"betColor"`
 	Source    string `json:"source"`
 	Win       bool   `json:"win"`
-	Status    bool   `json:"status"`
+	status    bool
 }
 
-func Sinal2Playbet(signals *[]MsgSignal, msgStatus MsgStatus, bets *[]BetBot) {
+func sinal2Playbet(signals *[]MsgSignal, msgStatus MsgStatus, bets *[]BetBot) {
 	log.Println("Executando a função após 4 segundos...", signals, msgStatus)
 
 	for _, value := range *signals {
@@ -125,7 +125,7 @@ func Sinal2Playbet(signals *[]MsgSignal, msgStatus MsgStatus, bets *[]BetBot) {
 			Color:     value.Color,
 			Source:    value.Source,
 			Win:       false,
-			Status:    false,
+			status:    false,
 		}
 		*bets = append(*bets, bet)
 
@@ -137,7 +137,7 @@ func Sinal2Playbet(signals *[]MsgSignal, msgStatus MsgStatus, bets *[]BetBot) {
 	log.Println("apostas feitas", bets)
 }
 
-func ControlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChan chan []byte,
+func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChan chan []byte,
 	errChan chan error, msgStatusChan chan MsgStatus,
 ) {
 	defer wg.Done()

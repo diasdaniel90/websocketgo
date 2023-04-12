@@ -7,15 +7,15 @@ import (
 )
 
 const (
-	Host = "127.0.0.1"
-	Port = 1234
-	Size = 1024
+	host = "127.0.0.1"
+	port = 1234
+	size = 1024
 )
 
 func listenUDP(msgSignalChan chan MsgSignal) {
-	ipv4 := net.ParseIP(Host)
+	ipv4 := net.ParseIP(host)
 
-	conn, err := net.ListenUDP("udp", &net.UDPAddr{IP: ipv4, Port: Port, Zone: ""})
+	conn, err := net.ListenUDP("udp", &net.UDPAddr{IP: ipv4, Port: port, Zone: ""})
 	if err != nil {
 		panic(err)
 	}
@@ -23,7 +23,7 @@ func listenUDP(msgSignalChan chan MsgSignal) {
 
 	log.Println("Listening on", conn.LocalAddr().String())
 
-	buf := make([]byte, Size)
+	buf := make([]byte, size)
 
 	for {
 		nBytes, _, err := conn.ReadFromUDP(buf)

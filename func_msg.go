@@ -14,8 +14,8 @@ const (
 	white      = 0
 	red        = 1
 	black      = 2
-	FatorWhite = 14
-	FatorColor = 2
+	fatorWhite = 14
+	fatorColor = 2
 )
 
 func (p *Payload) calculateTotalBetsPlaced() {
@@ -29,11 +29,11 @@ func (p *Payload) calculateTotalBetsEur() {
 func (p *Payload) calculateTotalRetentionEur() {
 	switch p.Color {
 	case red:
-		p.TotalRetentionEur = p.TotalEurBet - p.TotalRedEurBet*FatorColor
+		p.TotalRetentionEur = p.TotalEurBet - p.TotalRedEurBet*fatorColor
 	case black:
-		p.TotalRetentionEur = p.TotalEurBet - p.TotalBlackEurBet*FatorColor
+		p.TotalRetentionEur = p.TotalEurBet - p.TotalBlackEurBet*fatorColor
 	case white:
-		p.TotalRetentionEur = p.TotalEurBet - p.TotalWhiteEurBet*FatorWhite
+		p.TotalRetentionEur = p.TotalEurBet - p.TotalWhiteEurBet*fatorWhite
 	}
 }
 
