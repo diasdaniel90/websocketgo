@@ -14,7 +14,7 @@ import (
 const tempoEspera = 4
 
 func main() {
-	msgSignalChan := make(chan MsgSignal)
+	msgSignalChan := make(chan msgSignalStruct)
 
 	go listenUDP(msgSignalChan)
 
@@ -33,7 +33,7 @@ func main() {
 
 	msgChan := make(chan []byte)
 	errChan := make(chan error)
-	msgStatusChan := make(chan MsgStatus)
+	msgStatusChan := make(chan msgStatusStruct)
 
 	go controlBet(msgStatusChan, msgSignalChan)
 
@@ -50,11 +50,11 @@ func main() {
 	wg.Wait()
 }
 
-func controlBet(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal) {
+func controlBet(msgStatusChan <-chan msgStatusStruct, msgSignalChan <-chan msgSignalStruct) {
 	log.Println("###########11##################")
 
-	mensagens := []MsgSignal{}
-	bets := []BetBot{}
+	mensagens := []msgSignalStruct{}
+	bets := []betBotStruct{}
 	// var valido string
 	for {
 		select {
@@ -76,8 +76,8 @@ func controlBet(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal) 
 					log.Println("vai", bets[i].IDBet, msgStatusRec.IDBet, bets[i].Color, msgStatusRec.Color)
 
 					if bets[i].IDBet == msgStatusRec.IDBet && bets[i].Color == msgStatusRec.Color {
-						bets[i].Win = true
-						log.Println("vaivai", bets[i].Win)
+						bets[i].win = true
+						log.Println("vaivai", bets[i].win)
 					}
 				}
 
@@ -85,7 +85,7 @@ func controlBet(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal) 
 
 				log.Println("resultado", bets)
 
-				bets = []BetBot{}
+				bets = []betBotStruct{}
 			}
 
 		case signalMsg, ok := <-msgSignalChan:
@@ -106,16 +106,16 @@ func controlBet(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal) 
 	}
 }
 
-func sinal2Playbet(signals *[]MsgSignal, msgStatus MsgStatus, bets *[]BetBot) {
+func sinal2Playbet(signals *[]msgSignalStruct, msgStatus msgStatusStruct, bets *[]betBotStruct) {
 	log.Println("Executando a função após 4 segundos...", signals, msgStatus)
 
 	for _, value := range *signals {
-		bet := BetBot{
+		bet := betBotStruct{
 			IDBet:     msgStatus.IDBet,
 			Timestamp: msgStatus.Timestamp,
 			Color:     value.Color,
 			Source:    value.Source,
-			Win:       false,
+			win:       false,
 			status:    false,
 		}
 		*bets = append(*bets, bet)
@@ -123,17 +123,17 @@ func sinal2Playbet(signals *[]MsgSignal, msgStatus MsgStatus, bets *[]BetBot) {
 		log.Println("value", value)
 	}
 
-	*signals = []MsgSignal{}
+	*signals = []msgSignalStruct{}
 
 	log.Println("apostas feitas", bets)
 }
 
 func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChan chan []byte,
-	errChan chan error, msgStatusChan chan MsgStatus,
+	errChan chan error, msgStatusChan chan msgStatusStruct,
 ) {
 	defer wg.Done()
 
-	var lastMsg LastMsg
+	var lastMsg lastMsgStruct
 
 	for {
 		select {

@@ -12,7 +12,7 @@ const (
 	size = 1024
 )
 
-func listenUDP(msgSignalChan chan MsgSignal) {
+func listenUDP(msgSignalChan chan msgSignalStruct) {
 	ipv4 := net.ParseIP(host)
 
 	conn, err := net.ListenUDP("udp", &net.UDPAddr{IP: ipv4, Port: port, Zone: ""})
@@ -35,7 +35,7 @@ func listenUDP(msgSignalChan chan MsgSignal) {
 
 		// log.Printf("Received %d bytes from %s: %s\n", nBytes, addr.String(), string(buf[:nBytes]))
 
-		var msgSignal MsgSignal
+		var msgSignal msgSignalStruct
 
 		err = json.Unmarshal((buf[:nBytes]), &msgSignal)
 		if err != nil {

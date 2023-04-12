@@ -15,7 +15,7 @@ func envsDatabase() string {
 		panic(err.Error())
 	}
 
-	var cfg Config
+	var cfg configStruct
 
 	err = json.Unmarshal(file, &cfg)
 	if err != nil {

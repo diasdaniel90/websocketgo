@@ -18,15 +18,15 @@ const (
 	fatorColor = 2
 )
 
-func (p *Payload) calculateTotalBetsPlaced() {
+func (p *payloadStruct) calculateTotalBetsPlaced() {
 	p.TotalBetsPlaced = p.TotalRedBetsPlaced + p.TotalWhiteBetsPlaced + p.TotalBlackBetsPlaced
 }
 
-func (p *Payload) calculateTotalBetsEur() {
+func (p *payloadStruct) calculateTotalBetsEur() {
 	p.TotalEurBet = p.TotalRedEurBet + p.TotalWhiteEurBet + p.TotalBlackEurBet
 }
 
-func (p *Payload) calculateTotalRetentionEur() {
+func (p *payloadStruct) calculateTotalRetentionEur() {
 	switch p.Color {
 	case red:
 		p.TotalRetentionEur = p.TotalEurBet - p.TotalRedEurBet*fatorColor
@@ -37,16 +37,16 @@ func (p *Payload) calculateTotalRetentionEur() {
 	}
 }
 
-func decodePayload(message []byte) (*Payload, error) {
+func decodePayload(message []byte) (*payloadStruct, error) {
 	// log.Println("Gotoutine", runtime.NumGoroutine())
 	var data []json.RawMessage
 	if err := json.Unmarshal(message, &data); err != nil {
 		return nil, fmt.Errorf("error unmarshaling payload:: %w", err)
 	}
 
-	var payload Payload
+	var payload payloadStruct
 	if err := json.Unmarshal(data[1], &struct {
-		Payload *Payload `json:"payload"`
+		Payload *payloadStruct `json:"payload"`
 	}{&payload}); err != nil {
 		return nil, fmt.Errorf("error unmarshaling payload:: %w", err)
 	}
@@ -54,7 +54,7 @@ func decodePayload(message []byte) (*Payload, error) {
 	return &payload, nil
 }
 
-func filterMessage(dbConexao *sql.DB, payload *Payload, lastMsg *LastMsg) (*MsgStatus, error) {
+func filterMessage(dbConexao *sql.DB, payload *payloadStruct, lastMsg *lastMsgStruct) (*msgStatusStruct, error) {
 	// Verifica se a mensagem é duplicada com base no campo updated_at
 	var err error
 
@@ -73,7 +73,7 @@ func filterMessage(dbConexao *sql.DB, payload *Payload, lastMsg *LastMsg) (*MsgS
 			return nil, fmt.Errorf("error saveToDatabase: %w", err)
 		}
 
-		Status := MsgStatus{
+		Status := msgStatusStruct{
 			IDBet:     payload.IDBet,
 			Timestamp: payload.Timestamp,
 			BetStatus: payload.Status,
@@ -90,7 +90,7 @@ func filterMessage(dbConexao *sql.DB, payload *Payload, lastMsg *LastMsg) (*MsgS
 		tWaiting, _ := time.Parse(layout, payload.CreatedAt)
 		payload.Timestamp = tWaiting.Unix()
 
-		Status := MsgStatus{
+		Status := msgStatusStruct{
 			IDBet:     payload.IDBet,
 			Timestamp: payload.Timestamp,
 			BetStatus: payload.Status,

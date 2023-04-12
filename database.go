@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func saveToDatabase(dbConexao *sql.DB, pload *Payload) error {
+func saveToDatabase(dbConexao *sql.DB, pload *payloadStruct) error {
 	// Consultar se já existe registro com o id_bet informado
 	var exists bool
 
@@ -50,7 +50,7 @@ func saveToDatabase(dbConexao *sql.DB, pload *Payload) error {
 	return nil
 }
 
-func saveToDatabaseUsers(dbConexao *sql.DB, pload *Payload) error {
+func saveToDatabaseUsers(dbConexao *sql.DB, pload *payloadStruct) error {
 	// defer dbConexao.Close()
 	stmt, err := dbConexao.Prepare(
 		"INSERT INTO api_userresult" +
