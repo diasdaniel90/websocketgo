@@ -21,10 +21,21 @@ func main() {
 		Type:      "realtime",
 		Timestamp: 111,
 		Color:     1,
-		Source:    "2",
+		Source:    "fonte_1",
+	}
+
+	message2 := &MsgSignal{
+		Type:      "realtime",
+		Timestamp: 222,
+		Color:     2,
+		Source:    "fonte_2",
 	}
 
 	if err := sendUDPMessage(message); err != nil {
+		log.Printf("Erro ao decodificar mensagem: %s", err)
+	}
+
+	if err := sendUDPMessage(message2); err != nil {
 		log.Printf("Erro ao decodificar mensagem: %s", err)
 	}
 }

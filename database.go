@@ -51,6 +51,8 @@ func saveToDatabase(dbConexao *sql.DB, pload *Payload) error {
 }
 
 func saveToDatabaseUsers(dbConexao *sql.DB, pload *Payload) error {
+	// defer dbConexao.Close()
+
 	for _, bet := range pload.Bets {
 		var exists bool
 

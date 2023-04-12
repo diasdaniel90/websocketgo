@@ -4,7 +4,7 @@ type MsgStatus struct {
 	IDBet     string `json:"idBet"`
 	Timestamp int64  `json:"timestamp"`
 	BetStatus string `json:"betStatus"`
-	BetColor  int    `json:"betColor"`
+	Color     int    `json:"betColor"`
 	BetRoll   int    `json:"betRoll"`
 }
 type Bet struct {
@@ -21,7 +21,7 @@ type Bet struct {
 type MsgSignal struct {
 	Type      string `json:"idBet"`
 	Timestamp int64  `json:"timestamp"`
-	BetColor  int    `json:"betColor"`
+	Color     int    `json:"betColor"`
 	Source    string `json:"source"`
 }
 type LastMsg struct {

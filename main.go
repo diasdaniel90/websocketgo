@@ -35,7 +35,7 @@ func main() {
 	errChan := make(chan error)
 	msgStatusChan := make(chan MsgStatus)
 
-	go BetStatus(msgStatusChan, msgSignalChan)
+	go ControlBet(msgStatusChan, msgSignalChan)
 
 	go readMessages(conn, msgChan, errChan)
 	go writePing(conn)
@@ -50,7 +50,7 @@ func main() {
 	wg.Wait()
 }
 
-func BetStatus(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal) {
+func ControlBet(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal) {
 	log.Println("###########11##################")
 
 	mensagens := []MsgSignal{}
@@ -58,21 +58,33 @@ func BetStatus(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal) {
 	// var valido string
 	for {
 		select {
-		case msgStatusReceived, ok := <-msgStatusChan:
+		case msgStatusRec, ok := <-msgStatusChan:
 			if !ok {
 				log.Println("Canal msgStatusChan fechado")
 
 				return
 			}
 
-			if msgStatusReceived.BetStatus == waiting {
+			if msgStatusRec.BetStatus == waiting {
 				time.AfterFunc(tempoEspera*time.Second, func() {
-					go ControBet(&mensagens, msgStatusReceived, &bets)
+					go Sinal2Playbet(&mensagens, msgStatusRec, &bets)
 				})
 			}
 
-			if msgStatusReceived.BetStatus != waiting {
+			if msgStatusRec.BetStatus != waiting {
+				for i := range bets {
+					log.Println("vai", bets[i].IDBet, msgStatusRec.IDBet, bets[i].Color, msgStatusRec.Color)
+
+					if bets[i].IDBet == msgStatusRec.IDBet && bets[i].Color == msgStatusRec.Color {
+						bets[i].Win = true
+						log.Println("vaivai", bets[i].Win)
+					}
+				}
+
+				log.Println("Color:", msgStatusRec.Color)
+
 				log.Println("resultado", bets)
+
 				bets = []BetBot{}
 			}
 
@@ -97,13 +109,28 @@ func BetStatus(msgStatusChan <-chan MsgStatus, msgSignalChan <-chan MsgSignal) {
 type BetBot struct {
 	IDBet     string `json:"idBet"`
 	Timestamp int64  `json:"timestamp"`
-	BetColor  int    `json:"betColor"`
+	Color     int    `json:"betColor"`
 	Source    string `json:"source"`
 	Win       bool   `json:"win"`
+	Status    bool   `json:"status"`
 }
 
-func ControBet(signals *[]MsgSignal, msgStatus MsgStatus, bets *[]BetBot) {
+func Sinal2Playbet(signals *[]MsgSignal, msgStatus MsgStatus, bets *[]BetBot) {
 	log.Println("Executando a função após 4 segundos...", signals, msgStatus)
+
+	for _, value := range *signals {
+		bet := BetBot{
+			IDBet:     msgStatus.IDBet,
+			Timestamp: msgStatus.Timestamp,
+			Color:     value.Color,
+			Source:    value.Source,
+			Win:       false,
+			Status:    false,
+		}
+		*bets = append(*bets, bet)
+
+		log.Println("value", value)
+	}
 
 	*signals = []MsgSignal{}
 
@@ -119,7 +146,13 @@ func ControlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChan c
 
 	for {
 		select {
-		case msg := <-msgChan:
+		case msg, ok := <-msgChan:
+			if !ok {
+				log.Println("Canal msgStatusChan fechado")
+
+				return
+			}
+
 			payload, err := decodePayload(msg[2:])
 			if err != nil {
 				log.Printf("Erro ao decodificar mensagem: %s", err)

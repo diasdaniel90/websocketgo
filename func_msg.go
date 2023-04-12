@@ -77,7 +77,7 @@ func filterMessage(dbConexao *sql.DB, payload *Payload, lastMsg *LastMsg) (*MsgS
 			IDBet:     payload.IDBet,
 			Timestamp: payload.Timestamp,
 			BetStatus: payload.Status,
-			BetColor:  payload.Color,
+			Color:     payload.Color,
 			BetRoll:   payload.Roll,
 		}
 		// msgStatusChan <- Status
@@ -94,7 +94,7 @@ func filterMessage(dbConexao *sql.DB, payload *Payload, lastMsg *LastMsg) (*MsgS
 			IDBet:     payload.IDBet,
 			Timestamp: payload.Timestamp,
 			BetStatus: payload.Status,
-			BetColor:  payload.Color,
+			Color:     payload.Color,
 			BetRoll:   payload.Roll,
 		}
 		log.Println("filterMessage pronto para apostar")
