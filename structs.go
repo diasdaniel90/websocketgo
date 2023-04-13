@@ -1,20 +1,20 @@
 package main
 
 type betBotStruct struct {
-	IDBet     string `json:"idBet"`
-	Timestamp int64  `json:"timestamp"`
-	Color     int    `json:"betColor"`
-	Source    string `json:"source"`
-	win       bool   `json:"win"`
+	idBet     string
+	timestamp int64
+	color     int
+	source    string
+	win       bool
 	status    bool
 }
 
 type msgStatusStruct struct {
-	IDBet     string `json:"idBet"`
-	Timestamp int64  `json:"timestamp"`
-	BetStatus string `json:"betStatus"`
-	Color     int    `json:"betColor"`
-	BetRoll   int    `json:"betRoll"`
+	idBet     string
+	timestamp int64
+	betStatus string
+	color     int
+	betRoll   int
 }
 
 type msgSignalStruct struct {
@@ -24,9 +24,9 @@ type msgSignalStruct struct {
 	Source    string `json:"source"`
 }
 type lastMsgStruct struct {
-	LastUpdatedAt string `json:"lastUpdatedAt"`
-	LastID        string `json:"lastid"`
-	LastIDWaiting string `json:"lastidwaiting"`
+	lastUpdatedAt string
+	lastID        string
+	lastIDWaiting string
 }
 type payloadStruct struct {
 	IDBet                string            `json:"id"`

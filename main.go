@@ -65,23 +65,23 @@ func controlBet(msgStatusChan <-chan msgStatusStruct, msgSignalChan <-chan msgSi
 				return
 			}
 
-			if msgStatusRec.BetStatus == waiting {
+			if msgStatusRec.betStatus == waiting {
 				time.AfterFunc(tempoEspera*time.Second, func() {
 					go sinal2Playbet(&mensagens, msgStatusRec, &bets)
 				})
 			}
 
-			if msgStatusRec.BetStatus != waiting {
+			if msgStatusRec.betStatus != waiting {
 				for i := range bets {
-					log.Println("vai", bets[i].IDBet, msgStatusRec.IDBet, bets[i].Color, msgStatusRec.Color)
+					log.Println("vai", bets[i].idBet, msgStatusRec.idBet, bets[i].color, msgStatusRec.color)
 
-					if bets[i].IDBet == msgStatusRec.IDBet && bets[i].Color == msgStatusRec.Color {
+					if bets[i].idBet == msgStatusRec.idBet && bets[i].color == msgStatusRec.color {
 						bets[i].win = true
 						log.Println("vaivai", bets[i].win)
 					}
 				}
 
-				log.Println("Color:", msgStatusRec.Color)
+				log.Println("Color:", msgStatusRec.color)
 
 				log.Println("resultado", bets)
 
@@ -111,10 +111,10 @@ func sinal2Playbet(signals *[]msgSignalStruct, msgStatus msgStatusStruct, bets *
 
 	for _, value := range *signals {
 		bet := betBotStruct{
-			IDBet:     msgStatus.IDBet,
-			Timestamp: msgStatus.Timestamp,
-			Color:     value.Color,
-			Source:    value.Source,
+			idBet:     msgStatus.idBet,
+			timestamp: msgStatus.timestamp,
+			color:     value.Color,
+			source:    value.Source,
 			win:       false,
 			status:    false,
 		}

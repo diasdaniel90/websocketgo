@@ -58,10 +58,10 @@ func filterMessage(dbConexao *sql.DB, payload *payloadStruct, lastMsg *lastMsgSt
 	// Verifica se a mensagem é duplicada com base no campo updated_at
 	var err error
 
-	if payload.Status != waiting && lastMsg.LastUpdatedAt != payload.UpdatedAt &&
-		lastMsg.LastID != payload.IDBet && lastMsg.LastIDWaiting == payload.IDBet {
-		lastMsg.LastUpdatedAt = payload.UpdatedAt
-		lastMsg.LastID = payload.IDBet
+	if payload.Status != waiting && lastMsg.lastUpdatedAt != payload.UpdatedAt &&
+		lastMsg.lastID != payload.IDBet && lastMsg.lastIDWaiting == payload.IDBet {
+		lastMsg.lastUpdatedAt = payload.UpdatedAt
+		lastMsg.lastID = payload.IDBet
 		tComplete, _ := time.Parse(layout, payload.CreatedAt)
 		payload.Timestamp = tComplete.Unix()
 
@@ -74,30 +74,30 @@ func filterMessage(dbConexao *sql.DB, payload *payloadStruct, lastMsg *lastMsgSt
 		}
 
 		Status := msgStatusStruct{
-			IDBet:     payload.IDBet,
-			Timestamp: payload.Timestamp,
-			BetStatus: payload.Status,
-			Color:     payload.Color,
-			BetRoll:   payload.Roll,
+			idBet:     payload.IDBet,
+			timestamp: payload.Timestamp,
+			betStatus: payload.Status,
+			color:     payload.Color,
+			betRoll:   payload.Roll,
 		}
 		// msgStatusChan <- Status
 
-		log.Println("filterMessage Apostas fechadas e resultado")
+		log.Println("filterMessage Apostas fechadas e resultado", Status)
 
 		return &Status, nil
-	} else if payload.Status == waiting && lastMsg.LastIDWaiting != payload.IDBet {
-		lastMsg.LastIDWaiting = payload.IDBet
+	} else if payload.Status == waiting && lastMsg.lastIDWaiting != payload.IDBet {
+		lastMsg.lastIDWaiting = payload.IDBet
 		tWaiting, _ := time.Parse(layout, payload.CreatedAt)
 		payload.Timestamp = tWaiting.Unix()
 
 		Status := msgStatusStruct{
-			IDBet:     payload.IDBet,
-			Timestamp: payload.Timestamp,
-			BetStatus: payload.Status,
-			Color:     payload.Color,
-			BetRoll:   payload.Roll,
+			idBet:     payload.IDBet,
+			timestamp: payload.Timestamp,
+			betStatus: payload.Status,
+			color:     payload.Color,
+			betRoll:   payload.Roll,
 		}
-		log.Println("filterMessage pronto para apostar")
+		log.Println("filterMessage pronto para apostar", Status)
 
 		return &Status, nil
 	}
