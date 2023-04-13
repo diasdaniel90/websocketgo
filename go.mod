@@ -1,4 +1,4 @@
-module gows
+module websocketgo
 
 go 1.20
 
