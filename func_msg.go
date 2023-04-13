@@ -85,7 +85,8 @@ func filterMessage(dbConexao *sql.DB, payload *payloadStruct, lastMsg *lastMsgSt
 		log.Println("filterMessage Apostas fechadas e resultado", Status)
 
 		return &Status, nil
-	} else if payload.Status == waiting && lastMsg.lastIDWaiting != payload.IDBet {
+	}
+	if payload.Status == waiting && lastMsg.lastIDWaiting != payload.IDBet {
 		lastMsg.lastIDWaiting = payload.IDBet
 		tWaiting, _ := time.Parse(layout, payload.CreatedAt)
 		payload.Timestamp = tWaiting.Unix()

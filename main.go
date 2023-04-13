@@ -38,7 +38,7 @@ func main() {
 	go controlBet(msgStatusChan, msgSignalChan)
 
 	go readMessages(conn, msgChan, errChan)
-	go writePing(conn)
+	// go writePing(conn)
 	log.Println("main", runtime.NumGoroutine())
 
 	var wg sync.WaitGroup
@@ -81,9 +81,9 @@ func controlBet(msgStatusChan <-chan msgStatusStruct, msgSignalChan <-chan msgSi
 					}
 				}
 
-				log.Println("Color:", msgStatusRec.color)
+				// log.Println("Color:", msgStatusRec.color)
 
-				log.Println("resultado", bets)
+				// log.Println("resultado", bets)
 
 				bets = []betBotStruct{}
 			}
@@ -145,7 +145,7 @@ func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChan c
 			}
 
 			payload, err := decodePayload(msg[2:])
-			if err != nil {
+			if err == nil {
 				log.Printf("Erro ao decodificar mensagem: %s", err)
 
 				return
@@ -158,10 +158,6 @@ func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChan c
 				return
 			}
 
-			if Status != nil {
-				msgStatusChan <- *Status
-			}
-
 			if payload.Status == "waiting" {
 				err := saveToDatabaseUsers(dbConexao, payload)
 				if err != nil {
@@ -169,6 +165,10 @@ func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChan c
 
 					return
 				}
+			}
+
+			if Status != nil {
+				msgStatusChan <- *Status
 			}
 
 		case err := <-errChan:
