@@ -18,15 +18,11 @@ const (
 	fatorColor = 2
 )
 
-func (p *payloadStruct) calculateTotalBetsPlaced() {
+func (p *payloadStruct) calculateTotals() {
 	p.TotalBetsPlaced = p.TotalRedBetsPlaced + p.TotalWhiteBetsPlaced + p.TotalBlackBetsPlaced
-}
 
-func (p *payloadStruct) calculateTotalBetsEur() {
 	p.TotalEurBet = p.TotalRedEurBet + p.TotalWhiteEurBet + p.TotalBlackEurBet
-}
 
-func (p *payloadStruct) calculateTotalRetentionEur() {
 	switch p.Color {
 	case red:
 		p.TotalRetentionEur = p.TotalEurBet - p.TotalRedEurBet*fatorColor
@@ -65,9 +61,7 @@ func filterMessage(dbConexao *sql.DB, payload *payloadStruct, lastMsg *lastMsgSt
 		tComplete, _ := time.Parse(layout, payload.CreatedAt)
 		payload.Timestamp = tComplete.Unix()
 
-		payload.calculateTotalBetsPlaced()
-		payload.calculateTotalBetsEur()
-		payload.calculateTotalRetentionEur()
+		payload.calculateTotals()
 
 		if err = saveToDatabase(dbConexao, payload); err != nil {
 			return nil, fmt.Errorf("error saveToDatabase: %w", err)
