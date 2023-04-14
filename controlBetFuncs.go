@@ -49,13 +49,13 @@ func validateBet(msgStatusRec msgStatusStruct, sliceBets *[]betBotStruct) {
 				sliceBetsGale[len(sliceBetsGale)-1].gale++
 				log.Println("loss vai no gale", sliceBetsGale)
 			}
-			err := saveToDatabaseBets(dbConexao, (*sliceBets)[index])
+
+			err := saveToDatabaseBets(&(*sliceBets)[index])
 			if err != nil {
 				log.Printf("error no banco: %s", err)
 
 				continue
 			}
-
 		}
 
 		log.Println("Color:", msgStatusRec.color)

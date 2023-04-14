@@ -84,34 +84,35 @@ func saveToDatabaseUsers(dbConexao *sql.DB, pload *payloadStruct) error {
 		if err != nil {
 			panic(err.Error())
 		}
-		// log.Println("registro do user inserido com sucesso")
-	}
+	} // log.Println("registro do user inserido com sucesso")
 
 	return nil
 }
 
-func saveToDatabaseBets(dbConexao *sql.DB, pload *betBotStruct) error {
-	stmt, err := dbConexao.Prepare(
-		"INSERT INTO  api_serverresult" +
-			"(ID_bet, bet_color, bet_roll, `timestamp`, bet_status, " +
-			"total_red_eur_bet, total_red_bets_placed, total_white_eur_bet, total_white_bets_placed, " +
-			"total_black_eur_bet, total_black_bets_placed, total_bets_placed, total_eur_bet, total_retention_eur) " +
-			"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
-	if err != nil {
-		panic(err.Error())
-	}
-	defer stmt.Close()
+// dbConexao *sql.DB
+func saveToDatabaseBets(pload *betBotStruct) error {
+	log.Println("Dados de Status inseridos com sucesso!", pload)
 
-	// Executar o command SQL com valores
-	_, err = stmt.Exec(
-		pload.IDBet, pload.Color, pload.Roll, pload.Timestamp, pload.Status,
-		pload.TotalRedEurBet, pload.TotalRedBetsPlaced, pload.TotalWhiteEurBet, pload.TotalWhiteBetsPlaced,
-		pload.TotalBlackEurBet, pload.TotalBlackBetsPlaced, pload.TotalBetsPlaced, pload.TotalEurBet, pload.TotalRetentionEur)
-	if err != nil {
-		panic(err.Error())
-	}
+	// stmt, err := dbConexao.Prepare(
+	// 	"INSERT INTO  api_serverresult" +
+	// 		"(ID_bet, bet_color, bet_roll, `timestamp`, bet_status, " +
+	// 		"total_red_eur_bet, total_red_bets_placed, total_white_eur_bet, total_white_bets_placed, " +
+	// 		"total_black_eur_bet, total_black_bets_placed, total_bets_placed, total_eur_bet, total_retention_eur) " +
+	// 		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
+	// defer stmt.Close()
 
-	// log.Println("Dados de Status inseridos com sucesso!")
+	// // Executar o command SQL com valores
+	// _, err = stmt.Exec(
+	// 	pload.IDBet, pload.Color, pload.Roll, pload.Timestamp, pload.Status,
+	// 	pload.TotalRedEurBet, pload.TotalRedBetsPlaced, pload.TotalWhiteEurBet, pload.TotalWhiteBetsPlaced,
+	// 	pload.TotalBlackEurBet, pload.TotalBlackBetsPlaced,
+	// pload.TotalBetsPlaced, pload.TotalEurBet, pload.TotalRetentionEur)
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
 
 	return nil
 }
