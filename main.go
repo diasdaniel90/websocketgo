@@ -50,11 +50,29 @@ func main() {
 	wg.Wait()
 }
 
+func validateBet(msgStatusRec msgStatusStruct, sliceBets *[]betBotStruct) {
+	log.Print("valida win")
+
+	if msgStatusRec.betStatus != waiting {
+		for _, value := range *sliceBets {
+			if value.idBet == msgStatusRec.idBet && value.color == msgStatusRec.color {
+				value.win = true
+				log.Println("vaivai", value.win)
+			}
+		}
+
+		// log.Println("Color:", msgStatusRec.color)
+		// log.Println("resultado", bets)
+
+		*sliceBets = []betBotStruct{}
+	}
+}
+
 func controlBet(msgStatusChan <-chan msgStatusStruct, msgSignalChan <-chan msgSignalStruct) {
 	log.Println("###########11##################")
 
-	mensagens := []msgSignalStruct{}
-	bets := []betBotStruct{}
+	sliceSignals := []msgSignalStruct{}
+	sliceBets := []betBotStruct{}
 	// var valido string
 	for {
 		select {
@@ -62,41 +80,26 @@ func controlBet(msgStatusChan <-chan msgStatusStruct, msgSignalChan <-chan msgSi
 			if !ok {
 				log.Println("Canal msgStatusChan fechado")
 
-				return
+				continue
 			}
 
 			if msgStatusRec.betStatus == waiting {
 				time.AfterFunc(tempoEspera*time.Second, func() {
-					go sinal2Playbet(&mensagens, msgStatusRec, &bets)
+					go sinal2Playbet(&sliceSignals, msgStatusRec, &sliceBets)
 				})
 			}
 
-			if msgStatusRec.betStatus != waiting {
-				for i := range bets {
-					log.Println("vai", bets[i].idBet, msgStatusRec.idBet, bets[i].color, msgStatusRec.color)
-
-					if bets[i].idBet == msgStatusRec.idBet && bets[i].color == msgStatusRec.color {
-						bets[i].win = true
-						log.Println("vaivai", bets[i].win)
-					}
-				}
-
-				// log.Println("Color:", msgStatusRec.color)
-
-				// log.Println("resultado", bets)
-
-				bets = []betBotStruct{}
-			}
+			validateBet(msgStatusRec, &sliceBets)
 
 		case signalMsg, ok := <-msgSignalChan:
 			if !ok {
 				log.Println("Canal msgSignalChan fechado")
 
-				return
+				continue
 			}
 			// log.Println("Recebeu sinal msgSignalChan", mensagens)
 			// log.Println("Recebeu sinal ", signalMsg)
-			mensagens = append(mensagens, signalMsg)
+			sliceSignals = append(sliceSignals, signalMsg)
 
 		default:
 			// Faça algo aqui se ambos os canais estiverem vazios.
@@ -104,28 +107,6 @@ func controlBet(msgStatusChan <-chan msgStatusStruct, msgSignalChan <-chan msgSi
 			time.Sleep(100 * time.Millisecond)
 		}
 	}
-}
-
-func sinal2Playbet(signals *[]msgSignalStruct, msgStatus msgStatusStruct, bets *[]betBotStruct) {
-	log.Println("Executando a função após 4 segundos...", signals, msgStatus)
-
-	for _, value := range *signals {
-		bet := betBotStruct{
-			idBet:     msgStatus.idBet,
-			timestamp: msgStatus.timestamp,
-			color:     value.Color,
-			source:    value.Source,
-			win:       false,
-			status:    false,
-		}
-		*bets = append(*bets, bet)
-
-		log.Println("value", value)
-	}
-
-	*signals = []msgSignalStruct{}
-
-	log.Println("apostas feitas", bets)
 }
 
 func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChan chan []byte,
@@ -141,21 +122,21 @@ func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChan c
 			if !ok {
 				log.Println("Canal msgStatusChan fechado")
 
-				return
+				continue
 			}
 
 			payload, err := decodePayload(msg[2:])
 			if err == nil {
 				log.Printf("Erro ao decodificar mensagem: %s", err)
 
-				return
+				continue
 			}
 
 			Status, err := filterMessage(dbConexao, payload, &lastMsg)
 			if err != nil {
 				log.Printf("Erro ao filtrar mensagem: %s", err.Error())
 
-				return
+				continue
 			}
 
 			if payload.Status == "waiting" {
@@ -163,7 +144,7 @@ func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChan c
 				if err != nil {
 					log.Printf("error no banco: %s", err)
 
-					return
+					continue
 				}
 			}
 

@@ -86,6 +86,7 @@ func filterMessage(dbConexao *sql.DB, payload *payloadStruct, lastMsg *lastMsgSt
 
 		return &Status, nil
 	}
+
 	if payload.Status == waiting && lastMsg.lastIDWaiting != payload.IDBet {
 		lastMsg.lastIDWaiting = payload.IDBet
 		tWaiting, _ := time.Parse(layout, payload.CreatedAt)
