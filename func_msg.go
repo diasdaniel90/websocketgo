@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
+	"sync"
 	"time"
 )
 
@@ -74,7 +76,6 @@ func filterMessage(dbConexao *sql.DB, payload *payloadStruct, lastMsg *lastMsgSt
 			color:     payload.Color,
 			betRoll:   payload.Roll,
 		}
-		// msgStatusChan <- Status
 
 		log.Println("filterMessage Apostas fechadas e resultado", Status)
 
@@ -99,4 +100,54 @@ func filterMessage(dbConexao *sql.DB, payload *payloadStruct, lastMsg *lastMsgSt
 	}
 
 	return nil, err
+}
+
+func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChan chan []byte,
+	errChan chan error, msgStatusChan chan msgStatusStruct,
+) {
+	defer wg.Done()
+
+	var lastMsg lastMsgStruct
+
+	for {
+		select {
+		case msg, ok := <-msgChan:
+			if !ok {
+				log.Println("Canal msgChan fechado")
+
+				continue
+			}
+
+			payload, err := decodePayload(msg[2:])
+			if err != nil {
+				log.Printf("Erro ao decodificar mensagem: %s", err)
+
+				continue
+			}
+
+			Status, err := filterMessage(dbConexao, payload, &lastMsg)
+			if err != nil {
+				log.Printf("Erro ao filtrar mensagem: %s", err.Error())
+
+				continue
+			}
+
+			if payload.Status == "waiting" {
+				err := saveToDatabaseUsers(dbConexao, payload)
+				if err != nil {
+					log.Printf("error no banco: %s", err)
+
+					continue
+				}
+			}
+
+			if Status != nil {
+				msgStatusChan <- *Status
+			}
+
+		case err := <-errChan:
+			log.Println(err)
+			reconnect(conn, msgChan, errChan)
+		}
+	}
 }

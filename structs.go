@@ -7,6 +7,7 @@ type betBotStruct struct {
 	source    string
 	win       bool
 	status    bool
+	gale      int
 }
 
 type msgStatusStruct struct {
