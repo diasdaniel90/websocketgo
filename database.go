@@ -56,7 +56,7 @@ func saveToDatabaseUsers(dbConexao *sql.DB, pload *payloadStruct) error {
 		"INSERT INTO api_userresult" +
 			"(ID_bet, ID_bet_uniqa, `timestamp`, color, amount, currency_type,user) VALUES (?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
-		panic(err.Error())
+		return fmt.Errorf("error Prepare: %w", err)
 	}
 	defer stmt.Close()
 
@@ -89,30 +89,36 @@ func saveToDatabaseUsers(dbConexao *sql.DB, pload *payloadStruct) error {
 	return nil
 }
 
-// dbConexao *sql.DB
-func saveToDatabaseBets(pload *betBotStruct) error {
-	log.Println("Dados de Status inseridos com sucesso!", pload)
+func saveToDatabaseBets(dbConexao *sql.DB, betsLoad *[]betBotStruct) error {
+	// log.Println("print", pload)
+	// log.Printf("O tipo de pload é %T\n", pload)
+	// log.Println("print", &pload)
+	// log.Printf("O tipo de pload é %T\n", &pload)
+	// defer dbConexao.Close()
 
-	// stmt, err := dbConexao.Prepare(
-	// 	"INSERT INTO  api_serverresult" +
-	// 		"(ID_bet, bet_color, bet_roll, `timestamp`, bet_status, " +
-	// 		"total_red_eur_bet, total_red_bets_placed, total_white_eur_bet, total_white_bets_placed, " +
-	// 		"total_black_eur_bet, total_black_bets_placed, total_bets_placed, total_eur_bet, total_retention_eur) " +
-	// 		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
-	// if err != nil {
-	// 	panic(err.Error())
-	// }
-	// defer stmt.Close()
+	stmt, err := dbConexao.Prepare(
+		"INSERT INTO api_userresult" +
+			"(ID_bet, ID_bet_uniqa, `timestamp`, color, amount, currency_type,user) VALUES (?, ?, ?, ?, ?, ?, ?)")
+	if err != nil {
+		return fmt.Errorf("error Prepare: %w", err)
+	}
+	defer stmt.Close()
 
-	// // Executar o command SQL com valores
-	// _, err = stmt.Exec(
-	// 	pload.IDBet, pload.Color, pload.Roll, pload.Timestamp, pload.Status,
-	// 	pload.TotalRedEurBet, pload.TotalRedBetsPlaced, pload.TotalWhiteEurBet, pload.TotalWhiteBetsPlaced,
-	// 	pload.TotalBlackEurBet, pload.TotalBlackBetsPlaced,
-	// pload.TotalBetsPlaced, pload.TotalEurBet, pload.TotalRetentionEur)
-	// if err != nil {
-	// 	panic(err.Error())
-	// }
+	for _, value := range *betsLoad {
+		// log.Println("vai gravar ", bet.IDBetUser)
+		// timestamp_, _ := time.Parse(layout, betsLoad.CreatedAt)
+		// betsLoad.Timestamp = timestamp_.Unix()
+		log.Println(value)
+		// _, err = stmt.Exec(
+		// 	value.idBet, value.timestamp, value.timestampSinal, value.color,
+		// 	value.source, value.win, value.status, value.gale, value.amount, value.balanceWin)
+
+		// if err != nil {
+		// 	return fmt.Errorf("error Exec: %w", err)
+		// }
+	}
+
+	log.Println("registro da  aposta inserido com sucesso", betsLoad)
 
 	return nil
 }

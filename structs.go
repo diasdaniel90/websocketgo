@@ -1,13 +1,16 @@
 package main
 
 type betBotStruct struct {
-	idBet     string
-	timestamp int64
-	color     int
-	source    string
-	win       bool
-	status    bool
-	gale      int
+	idBet          string
+	timestamp      int64
+	timestampSinal int64
+	color          int
+	source         string
+	win            bool
+	status         bool
+	gale           int
+	amount         float32
+	balanceWin     float32
 }
 
 type msgStatusStruct struct {

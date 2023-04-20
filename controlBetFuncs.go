@@ -1,11 +1,15 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"time"
 )
 
-const maxGale = 2
+const (
+	maxGale = 2
+	amount  = 2.0
+)
 
 func sinal2Playbet(sliceSignals *[]msgSignalStruct,
 	msgStatusRec msgStatusStruct, sliceBets *[]betBotStruct,
@@ -15,13 +19,16 @@ func sinal2Playbet(sliceSignals *[]msgSignalStruct,
 	if len(*sliceSignals) != 0 {
 		for _, value := range *sliceSignals {
 			bet := betBotStruct{
-				idBet:     msgStatusRec.idBet,
-				timestamp: msgStatusRec.timestamp,
-				color:     value.Color,
-				source:    value.Source,
-				win:       false,
-				status:    false,
-				gale:      0,
+				idBet:          msgStatusRec.idBet,
+				timestamp:      msgStatusRec.timestamp,
+				timestampSinal: value.Timestamp,
+				color:          value.Color,
+				source:         value.Source,
+				win:            false,
+				status:         false,
+				gale:           0,
+				amount:         amount,
+				balanceWin:     0.0,
 			}
 			*sliceBets = append(*sliceBets, bet)
 
@@ -34,7 +41,7 @@ func sinal2Playbet(sliceSignals *[]msgSignalStruct,
 	log.Println("apostas feitas", sliceBets)
 }
 
-func validateBet(msgStatusRec msgStatusStruct, sliceBets *[]betBotStruct) {
+func validateBet(dbConexao *sql.DB, msgStatusRec msgStatusStruct, sliceBets *[]betBotStruct) {
 	if msgStatusRec.betStatus != waiting && len(*sliceBets) != 0 {
 		log.Print("valida win")
 
@@ -43,19 +50,28 @@ func validateBet(msgStatusRec msgStatusStruct, sliceBets *[]betBotStruct) {
 		for index := range *sliceBets {
 			if (*sliceBets)[index].idBet == msgStatusRec.idBet && (*sliceBets)[index].color == msgStatusRec.color {
 				(*sliceBets)[index].win = true
+
+				(*sliceBets)[index].balanceWin /= amount
+
 				log.Println("vaivai", (*sliceBets)[index].win)
-			} else if (*sliceBets)[index].gale < maxGale {
-				sliceBetsGale = append(sliceBetsGale, (*sliceBets)[index])
-				sliceBetsGale[len(sliceBetsGale)-1].gale++
-				log.Println("loss vai no gale", sliceBetsGale)
+			} else {
+				(*sliceBets)[index].balanceWin /= -amount
+				if (*sliceBets)[index].gale < maxGale {
+					sliceBetsGale = append(sliceBetsGale, (*sliceBets)[index])
+					sliceBetsGale[len(sliceBetsGale)-1].gale++
+					sliceBetsGale[len(sliceBetsGale)-1].amount *= 2
+					log.Println("loss vai no gale", sliceBetsGale)
+				}
 			}
+		}
+		// log.Println("print", sliceBets)
+		// log.Printf("O tipo de myVar é %T\n", sliceBets)
+		// log.Println("print", *sliceBets)
+		// log.Printf("O tipo de myVar é %T\n", *sliceBets)
 
-			err := saveToDatabaseBets(&(*sliceBets)[index])
-			if err != nil {
-				log.Printf("error no banco: %s", err)
-
-				continue
-			}
+		err := saveToDatabaseBets(dbConexao, sliceBets)
+		if err != nil {
+			log.Printf("error no banco: %s", err)
 		}
 
 		log.Println("Color:", msgStatusRec.color)
@@ -71,7 +87,7 @@ func setID(sliceBets *[]betBotStruct, msgStatusRec msgStatusStruct) {
 	}
 }
 
-func controlBet(msgStatusChan <-chan msgStatusStruct, msgSignalChan <-chan msgSignalStruct) {
+func controlBet(dbConexao *sql.DB, msgStatusChan <-chan msgStatusStruct, msgSignalChan <-chan msgSignalStruct) {
 	log.Println("###########11##################")
 
 	sliceSignals := []msgSignalStruct{}
@@ -94,7 +110,7 @@ func controlBet(msgStatusChan <-chan msgStatusStruct, msgSignalChan <-chan msgSi
 				})
 			}
 
-			validateBet(msgStatusRec, &sliceBets)
+			validateBet(dbConexao, msgStatusRec, &sliceBets)
 
 		case signalMsg, ok := <-msgSignalChan:
 			if !ok {
