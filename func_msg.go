@@ -102,7 +102,7 @@ func filterMessage(dbConexao *sql.DB, payload *payloadStruct, lastMsg *lastMsgSt
 	return nil, err
 }
 
-func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChan chan []byte,
+func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChanWebsocket chan []byte,
 	errChan chan error, msgStatusChan chan msgStatusStruct,
 ) {
 	defer wg.Done()
@@ -111,9 +111,9 @@ func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChan c
 
 	for {
 		select {
-		case msg, ok := <-msgChan:
+		case msg, ok := <-msgChanWebsocket:
 			if !ok {
-				log.Println("Canal msgChan fechado")
+				log.Println("Canal msgChanWebsocket fechado")
 
 				continue
 			}
@@ -147,7 +147,7 @@ func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChan c
 
 		case err := <-errChan:
 			log.Println(err)
-			reconnect(conn, msgChan, errChan)
+			reconnect(conn, msgChanWebsocket, errChan)
 		}
 	}
 }

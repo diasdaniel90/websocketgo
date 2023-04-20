@@ -29,13 +29,13 @@ func main() {
 	}
 	defer conn.Close()
 
-	msgChan := make(chan []byte)
+	msgChanWebsocket := make(chan []byte)
 	errChan := make(chan error)
 	msgStatusChan := make(chan msgStatusStruct)
 
-	go controlBet(msgStatusChan, msgSignalChan)
+	go controlBet(dbConexao, msgStatusChan, msgSignalChan)
 
-	go readMessages(conn, msgChan, errChan)
+	go readMessages(conn, msgChanWebsocket, errChan)
 	go writePing(conn)
 	log.Println("main", runtime.NumGoroutine())
 
@@ -43,7 +43,7 @@ func main() {
 
 	wg.Add(1)
 
-	go controlMsg(&wg, conn, dbConexao, msgChan, errChan, msgStatusChan)
+	go controlMsg(&wg, conn, dbConexao, msgChanWebsocket, errChan, msgStatusChan)
 
 	wg.Wait()
 }

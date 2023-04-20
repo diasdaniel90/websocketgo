@@ -43,7 +43,7 @@ func connect() (*websocket.Conn, error) {
 	return conn, nil
 }
 
-func reconnect(conn io.Closer, msgChan chan []byte, errChan chan error) {
+func reconnect(conn io.Closer, msgChanWebsocket chan []byte, errChan chan error) {
 	log.Println("Conexão fechada pelo servidor, reconectando...")
 
 	if err := conn.Close(); err != nil {
@@ -62,12 +62,12 @@ func reconnect(conn io.Closer, msgChan chan []byte, errChan chan error) {
 	log.Println("Conectado novamente!")
 	log.Println("reconect", runtime.NumGoroutine())
 
-	go readMessages(newConn, msgChan, errChan)
+	go readMessages(newConn, msgChanWebsocket, errChan)
 	go writePing(newConn)
 	log.Println("reconect2", runtime.NumGoroutine())
 }
 
-func readMessages(conn *websocket.Conn, msgChan chan []byte, errChan chan error) {
+func readMessages(conn *websocket.Conn, msgChanWebsocket chan []byte, errChan chan error) {
 	for {
 		_, payload, err := conn.ReadMessage()
 		if err != nil {
@@ -75,7 +75,7 @@ func readMessages(conn *websocket.Conn, msgChan chan []byte, errChan chan error)
 
 			return
 		} else if strings.Contains(string(payload), "double.tick") {
-			msgChan <- payload
+			msgChanWebsocket <- payload
 		}
 	}
 }
