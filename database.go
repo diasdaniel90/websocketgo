@@ -97,8 +97,9 @@ func saveToDatabaseBets(dbConexao *sql.DB, betsLoad *[]betBotStruct) error {
 	// defer dbConexao.Close()
 
 	stmt, err := dbConexao.Prepare(
-		"INSERT INTO api_userresult" +
-			"(ID_bet, ID_bet_uniqa, `timestamp`, color, amount, currency_type,user) VALUES (?, ?, ?, ?, ?, ?, ?)")
+		"INSERT INTO api_gocontrolbetresult" +
+			"(ID_bet, `timestamp`, timestamp_signal, color, source, win, " +
+			"status, gale, amount, balanceWin) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		return fmt.Errorf("error Prepare: %w", err)
 	}
@@ -109,16 +110,16 @@ func saveToDatabaseBets(dbConexao *sql.DB, betsLoad *[]betBotStruct) error {
 		// timestamp_, _ := time.Parse(layout, betsLoad.CreatedAt)
 		// betsLoad.Timestamp = timestamp_.Unix()
 		log.Println(value)
-		// _, err = stmt.Exec(
-		// 	value.idBet, value.timestamp, value.timestampSinal, value.color,
-		// 	value.source, value.win, value.status, value.gale, value.amount, value.balanceWin)
+		_, err = stmt.Exec(
+			value.idBet, value.timestamp, value.timestampSinal, value.color, value.source, value.win,
+			value.status, value.gale, value.amount, value.balanceWin)
 
-		// if err != nil {
-		// 	return fmt.Errorf("error Exec: %w", err)
-		// }
+		if err != nil {
+			return fmt.Errorf("error Exec: %w", err)
+		}
 	}
 
-	log.Println("registro da  aposta inserido com sucesso", betsLoad)
+	log.Println("registro da aposta inserido com sucesso", betsLoad)
 
 	return nil
 }

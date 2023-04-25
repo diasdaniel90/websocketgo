@@ -25,7 +25,7 @@ func sinal2Playbet(sliceSignals *[]msgSignalStruct,
 				color:          value.Color,
 				source:         value.Source,
 				win:            false,
-				status:         false,
+				status:         "simulado",
 				gale:           0,
 				amount:         amount,
 				balanceWin:     0.0,
@@ -52,10 +52,8 @@ func validateBet(dbConexao *sql.DB, msgStatusRec msgStatusStruct, sliceBets *[]b
 				(*sliceBets)[index].win = true
 
 				(*sliceBets)[index].balanceWin = (*sliceBets)[index].amount / amount
-
 			} else {
 				(*sliceBets)[index].balanceWin = -((*sliceBets)[index].amount / amount)
-
 				if (*sliceBets)[index].gale < maxGale {
 					sliceBetsGale = append(sliceBetsGale, (*sliceBets)[index])
 					sliceBetsGale[len(sliceBetsGale)-1].gale++

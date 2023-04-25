@@ -7,7 +7,7 @@ type betBotStruct struct {
 	color          int
 	source         string
 	win            bool
-	status         bool
+	status         string
 	gale           int
 	amount         float32
 	balanceWin     float32
