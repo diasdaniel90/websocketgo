@@ -51,11 +51,11 @@ func validateBet(dbConexao *sql.DB, msgStatusRec msgStatusStruct, sliceBets *[]b
 			if (*sliceBets)[index].idBet == msgStatusRec.idBet && (*sliceBets)[index].color == msgStatusRec.color {
 				(*sliceBets)[index].win = true
 
-				(*sliceBets)[index].balanceWin /= amount
+				(*sliceBets)[index].balanceWin = (*sliceBets)[index].amount / amount
 
-				log.Println("vaivai", (*sliceBets)[index].win)
 			} else {
-				(*sliceBets)[index].balanceWin /= -amount
+				(*sliceBets)[index].balanceWin = -((*sliceBets)[index].amount / amount)
+
 				if (*sliceBets)[index].gale < maxGale {
 					sliceBetsGale = append(sliceBetsGale, (*sliceBets)[index])
 					sliceBetsGale[len(sliceBetsGale)-1].gale++
@@ -74,7 +74,7 @@ func validateBet(dbConexao *sql.DB, msgStatusRec msgStatusStruct, sliceBets *[]b
 			log.Printf("error no banco: %s", err)
 		}
 
-		log.Println("Color:", msgStatusRec.color)
+		log.Println("Resultado Color:", msgStatusRec.color)
 		log.Println("resultado bet", *sliceBets)
 		*sliceBets = make([]betBotStruct, len(sliceBetsGale))
 		copy(*sliceBets, sliceBetsGale)
@@ -88,8 +88,6 @@ func setID(sliceBets *[]betBotStruct, msgStatusRec msgStatusStruct) {
 }
 
 func controlBet(dbConexao *sql.DB, msgStatusChan <-chan msgStatusStruct, msgSignalChan <-chan msgSignalStruct) {
-	log.Println("###########11##################")
-
 	sliceSignals := []msgSignalStruct{}
 	sliceBets := []betBotStruct{}
 	// var valido string
