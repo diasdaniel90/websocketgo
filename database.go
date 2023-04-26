@@ -95,7 +95,6 @@ func saveToDatabaseBets(dbConexao *sql.DB, betsLoad *[]betBotStruct) error {
 	// log.Println("print", &pload)
 	// log.Printf("O tipo de pload é %T\n", &pload)
 	// defer dbConexao.Close()
-
 	stmt, err := dbConexao.Prepare(
 		"INSERT INTO api_gocontrolbetresult" +
 			"(ID_bet, `timestamp`, timestamp_signal, color, source, win, " +

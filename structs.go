@@ -22,10 +22,10 @@ type msgStatusStruct struct {
 }
 
 type msgSignalStruct struct {
-	Type      string `json:"idBet"`
-	Timestamp int64  `json:"timestamp"`
-	Color     int    `json:"betColor"`
-	Source    string `json:"source"`
+	Type      string  `json:"type"`
+	Timestamp float64 `json:"time"`
+	Color     int     `json:"color"`
+	Source    int     `json:"source"`
 }
 type lastMsgStruct struct {
 	lastUpdatedAt string

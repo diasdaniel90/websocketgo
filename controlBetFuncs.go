@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"time"
 )
@@ -21,9 +22,9 @@ func sinal2Playbet(sliceSignals *[]msgSignalStruct,
 			bet := betBotStruct{
 				idBet:          msgStatusRec.idBet,
 				timestamp:      msgStatusRec.timestamp,
-				timestampSinal: value.Timestamp,
+				timestampSinal: int64(value.Timestamp),
 				color:          value.Color,
-				source:         value.Source,
+				source:         fmt.Sprint(value.Source),
 				win:            false,
 				status:         "simulado",
 				gale:           0,

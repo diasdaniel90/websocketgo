@@ -10,9 +10,9 @@ import (
 const address = "127.0.0.1:1234"
 
 type msgSignal struct {
-	Type      string `json:"idBet"`
-	Timestamp int64  `json:"timestamp"`
-	Color     int    `json:"betColor"`
+	Type      string `json:"type"`
+	Timestamp int64  `json:"time"`
+	Color     int    `json:"color"`
 	Source    string `json:"source"`
 }
 

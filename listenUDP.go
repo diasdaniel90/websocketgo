@@ -33,7 +33,7 @@ func listenUDP(msgSignalChan chan msgSignalStruct) {
 			continue
 		}
 
-		// log.Printf("Received %d bytes from %s: %s\n", nBytes, addr.String(), string(buf[:nBytes]))
+		log.Printf("Received %d  %s\n", nBytes, string(buf[:nBytes]))
 
 		var msgSignal msgSignalStruct
 
@@ -43,7 +43,7 @@ func listenUDP(msgSignalChan chan msgSignalStruct) {
 			panic(err.Error())
 		}
 
-		// log.Println(msgSignal)
+		log.Println(msgSignal)
 		msgSignalChan <- msgSignal
 	}
 }
