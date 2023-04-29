@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -78,6 +79,7 @@ func filterMessage(dbConexao *sql.DB, payload *payloadStruct, lastMsg *lastMsgSt
 		}
 
 		log.Println("filterMessage Apostas fechadas e resultado", Status)
+		log.Println("runtime.NumGoroutine()", runtime.NumGoroutine())
 
 		return &Status, nil
 	}
@@ -95,6 +97,7 @@ func filterMessage(dbConexao *sql.DB, payload *payloadStruct, lastMsg *lastMsgSt
 			betRoll:   payload.Roll,
 		}
 		log.Println("filterMessage pronto para apostar", Status)
+		log.Println("runtime.NumGoroutine()", runtime.NumGoroutine())
 
 		return &Status, nil
 	}
