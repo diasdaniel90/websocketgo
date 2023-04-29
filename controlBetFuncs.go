@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"time"
 )
 
 const (
@@ -16,7 +15,10 @@ const (
 func sinal2Playbet(sliceSignals *[]msgSignalStruct,
 	msgStatusRec msgStatusStruct, sliceBets *[]betBotStruct,
 ) {
-	log.Println("Executando a função após 4 segundos...", sliceSignals, msgStatusRec)
+	log.Printf("Executando a função após %d segundos...", tempoEspera)
+
+	log.Println("sliceSignals", sliceSignals)
+	log.Println("msgStatusRec", msgStatusRec)
 
 	if len(*sliceSignals) != 0 {
 		for _, value := range *sliceSignals {
@@ -44,8 +46,8 @@ func sinal2Playbet(sliceSignals *[]msgSignalStruct,
 }
 
 func validateBet(dbConexao *sql.DB, msgStatusRec msgStatusStruct, sliceBets *[]betBotStruct) {
+	log.Print("validateBet 1 ")
 	if msgStatusRec.betStatus != waiting && len(*sliceBets) != 0 {
-		log.Print("valida win")
 
 		sliceBetsGale := []betBotStruct{}
 
@@ -79,6 +81,7 @@ func validateBet(dbConexao *sql.DB, msgStatusRec msgStatusStruct, sliceBets *[]b
 		*sliceBets = make([]betBotStruct, len(sliceBetsGale))
 		copy(*sliceBets, sliceBetsGale)
 	}
+	log.Print("validateBet 2 ")
 }
 
 func setID(sliceBets *[]betBotStruct, msgStatusRec msgStatusStruct) {
@@ -101,11 +104,12 @@ func controlBet(dbConexao *sql.DB, msgStatusChan <-chan msgStatusStruct, msgSign
 			}
 
 			if msgStatusRec.betStatus == waiting {
+				log.Print("vai esperar")
 				setID(&sliceBets, msgStatusRec)
 
-				time.AfterFunc(tempoEspera*time.Second, func() {
-					go sinal2Playbet(&sliceSignals, msgStatusRec, &sliceBets)
-				})
+				// time.AfterFunc(tempoEspera*time.Second, func() {
+				go sinal2Playbet(&sliceSignals, msgStatusRec, &sliceBets)
+				//})
 			}
 
 			validateBet(dbConexao, msgStatusRec, &sliceBets)
@@ -120,10 +124,10 @@ func controlBet(dbConexao *sql.DB, msgStatusChan <-chan msgStatusStruct, msgSign
 			// log.Println("Recebeu sinal ", signalMsg)
 			sliceSignals = append(sliceSignals, signalMsg)
 
-		default:
-			// Faça algo aqui se ambos os canais estiverem vazios.
-			// Por exemplo, tente novamente mais tarde.
-			time.Sleep(100 * time.Millisecond)
+			// default:
+			// 	// Faça algo aqui se ambos os canais estiverem vazios.
+			// 	// Por exemplo, tente novamente mais tarde.
+			// 	time.Sleep(100 * time.Millisecond)
 		}
 	}
 }

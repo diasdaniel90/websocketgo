@@ -49,6 +49,7 @@ func decodePayload(message []byte) (*payloadStruct, error) {
 	}{&payload}); err != nil {
 		return nil, fmt.Errorf("error unmarshaling payload:: %w", err)
 	}
+
 	// Retorna a mensagem decodificada
 	return &payload, nil
 }
@@ -120,7 +121,7 @@ func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChanWe
 
 				continue
 			}
-
+			log.Println("+msg")
 			payload, err := decodePayload(msg[2:])
 			if err != nil {
 				log.Printf("Erro ao decodificar mensagem: %s", err)
@@ -136,12 +137,7 @@ func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChanWe
 			}
 
 			if payload.Status == "waiting" {
-				err := saveToDatabaseUsers(dbConexao, payload)
-				if err != nil {
-					log.Printf("error no banco: %s", err)
-
-					continue
-				}
+				go saveToDatabaseUsers(dbConexao, *payload)
 			}
 
 			if Status != nil {

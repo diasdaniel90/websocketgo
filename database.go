@@ -45,18 +45,18 @@ func saveToDatabase(dbConexao *sql.DB, pload *payloadStruct) error {
 		panic(err.Error())
 	}
 
-	// log.Println("Dados de Status inseridos com sucesso!")
+	log.Println("Dados de Status inseridos com sucesso!")
 
 	return nil
 }
 
-func saveToDatabaseUsers(dbConexao *sql.DB, pload *payloadStruct) error {
+func saveToDatabaseUsers(dbConexao *sql.DB, pload payloadStruct) {
 	// defer dbConexao.Close()
 	stmt, err := dbConexao.Prepare(
 		"INSERT INTO api_userresult" +
 			"(ID_bet, ID_bet_uniqa, `timestamp`, color, amount, currency_type,user) VALUES (?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
-		return fmt.Errorf("error Prepare: %w", err)
+		panic(err)
 	}
 	defer stmt.Close()
 
@@ -67,7 +67,7 @@ func saveToDatabaseUsers(dbConexao *sql.DB, pload *payloadStruct) error {
 			"SELECT EXISTS(SELECT ID_bet_uniqa FROM api_userresult WHERE ID_bet_uniqa = ?)",
 			bet.IDBetUser).Scan(&exists)
 		if err != nil {
-			return fmt.Errorf("error SELECT EXISTS: %w", err)
+			panic(err)
 		}
 
 		if exists {
@@ -84,9 +84,8 @@ func saveToDatabaseUsers(dbConexao *sql.DB, pload *payloadStruct) error {
 		if err != nil {
 			panic(err.Error())
 		}
-	} // log.Println("registro do user inserido com sucesso")
-
-	return nil
+	}
+	log.Println("registro do user inserido com sucesso", pload.IDBet)
 }
 
 func saveToDatabaseBets(dbConexao *sql.DB, betsLoad *[]betBotStruct) error {
