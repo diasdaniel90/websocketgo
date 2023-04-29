@@ -9,8 +9,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-const tempoEspera = 4
-
 func main() {
 	msgSignalChan := make(chan msgSignalStruct)
 
