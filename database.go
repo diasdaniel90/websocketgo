@@ -84,7 +84,7 @@ func saveToDatabaseUsers(dbConexao *sql.DB, pload payloadStruct) {
 			panic(err.Error())
 		}
 	}
-	log.Println("registro do user inserido com sucesso", pload.IDBet)
+	// log.Println("registro do user inserido com sucesso", pload.IDBet)
 }
 
 func saveToDatabaseBets(dbConexao *sql.DB, betsLoad *[]betBotStruct) error {
