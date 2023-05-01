@@ -121,7 +121,7 @@ func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChanWe
 
 				continue
 			}
-			log.Println("+msg")
+
 			payload, err := decodePayload(msg[2:])
 			if err != nil {
 				log.Printf("Erro ao decodificar mensagem: %s", err)

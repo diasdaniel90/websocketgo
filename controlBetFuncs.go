@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"time"
 )
 
 const (
@@ -46,7 +47,6 @@ func sinal2Playbet(sliceSignals *[]msgSignalStruct,
 }
 
 func validateBet(dbConexao *sql.DB, msgStatusRec msgStatusStruct, sliceBets *[]betBotStruct) {
-	log.Print("validateBet 1 ")
 	if msgStatusRec.betStatus != waiting && len(*sliceBets) != 0 {
 
 		sliceBetsGale := []betBotStruct{}
@@ -81,7 +81,6 @@ func validateBet(dbConexao *sql.DB, msgStatusRec msgStatusStruct, sliceBets *[]b
 		*sliceBets = make([]betBotStruct, len(sliceBetsGale))
 		copy(*sliceBets, sliceBetsGale)
 	}
-	log.Print("validateBet 2 ")
 }
 
 func setID(sliceBets *[]betBotStruct, msgStatusRec msgStatusStruct) {
@@ -107,9 +106,9 @@ func controlBet(dbConexao *sql.DB, msgStatusChan <-chan msgStatusStruct, msgSign
 				log.Print("vai esperar")
 				setID(&sliceBets, msgStatusRec)
 
-				// time.AfterFunc(tempoEspera*time.Second, func() {
-				go sinal2Playbet(&sliceSignals, msgStatusRec, &sliceBets)
-				//})
+				time.AfterFunc(tempoEspera*time.Second, func() {
+					go sinal2Playbet(&sliceSignals, msgStatusRec, &sliceBets)
+				})
 			}
 
 			validateBet(dbConexao, msgStatusRec, &sliceBets)
