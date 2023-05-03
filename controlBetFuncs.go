@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	maxGale     = 2
+	maxGale     = 4
 	amount      = 2.0
 	tempoEspera = 4
 )
