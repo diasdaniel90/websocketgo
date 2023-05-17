@@ -21,14 +21,14 @@ func main() {
 		Type:      "realtime",
 		Timestamp: 111,
 		Color:     1,
-		Source:    111,
+		Source:    333,
 	}
 
 	message2 := &msgSignal{
 		Type:      "realtime",
 		Timestamp: 222,
 		Color:     2,
-		Source:    1111,
+		Source:    444,
 	}
 
 	if err := sendUDPMessage(message); err != nil {
