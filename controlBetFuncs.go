@@ -46,26 +46,50 @@ func sinal2Playbet(sliceSignals *[]msgSignalStruct,
 	log.Println("apostas feitas", sliceBets)
 }
 
-func validateBet(dbConexao *sql.DB, msgStatusRec msgStatusStruct, sliceBets *[]betBotStruct) {
-	if msgStatusRec.betStatus != waiting && len(*sliceBets) != 0 {
+func winGale(sliceBets *[]betBotStruct, sliceBetsGale *[]betBotStruct, msgStatusRec msgStatusStruct) {
+	for index := range *sliceBets {
+		// verifica se teve win e incrementa o gale
+		if (*sliceBets)[index].idBet == msgStatusRec.idBet && (*sliceBets)[index].color == msgStatusRec.color {
+			(*sliceBets)[index].win = true
 
-		sliceBetsGale := []betBotStruct{}
-
-		for index := range *sliceBets {
-			if (*sliceBets)[index].idBet == msgStatusRec.idBet && (*sliceBets)[index].color == msgStatusRec.color {
-				(*sliceBets)[index].win = true
-
-				(*sliceBets)[index].balanceWin = (*sliceBets)[index].amount / amount
-			} else {
-				(*sliceBets)[index].balanceWin = -((*sliceBets)[index].amount / amount)
-				if (*sliceBets)[index].gale < maxGale {
-					sliceBetsGale = append(sliceBetsGale, (*sliceBets)[index])
-					sliceBetsGale[len(sliceBetsGale)-1].gale++
-					sliceBetsGale[len(sliceBetsGale)-1].amount *= 2
-					log.Println("loss vai no gale", sliceBetsGale)
-				}
+			(*sliceBets)[index].balanceWin = (*sliceBets)[index].amount / amount
+		} else {
+			(*sliceBets)[index].balanceWin = -((*sliceBets)[index].amount / amount)
+			if (*sliceBets)[index].gale < maxGale {
+				*sliceBetsGale = append(*sliceBetsGale, (*sliceBets)[index])
+				(*sliceBetsGale)[len(*sliceBetsGale)-1].gale++
+				(*sliceBetsGale)[len(*sliceBetsGale)-1].amount *= 2
+				log.Println("loss vai no gale", sliceBetsGale)
 			}
 		}
+	}
+}
+
+func validateBet(dbConexao *sql.DB, msgStatusRec msgStatusStruct,
+	sliceBets *[]betBotStruct,
+) {
+	if msgStatusRec.betStatus != waiting && len(*sliceBets) != 0 {
+		sliceBetsGale := []betBotStruct{}
+
+		winGale(sliceBets, &sliceBetsGale, msgStatusRec)
+
+		// for index := range *sliceBets {
+		// 	// verifica se teve win e incrementa o gale
+
+		// 	if (*sliceBets)[index].idBet == msgStatusRec.idBet && (*sliceBets)[index].color == msgStatusRec.color {
+		// 		(*sliceBets)[index].win = true
+
+		// 		(*sliceBets)[index].balanceWin = (*sliceBets)[index].amount / amount
+		// 	} else {
+		// 		(*sliceBets)[index].balanceWin = -((*sliceBets)[index].amount / amount)
+		// 		if (*sliceBets)[index].gale < maxGale {
+		// 			sliceBetsGale = append(sliceBetsGale, (*sliceBets)[index])
+		// 			sliceBetsGale[len(sliceBetsGale)-1].gale++
+		// 			sliceBetsGale[len(sliceBetsGale)-1].amount *= 2
+		// 			log.Println("loss vai no gale", sliceBetsGale)
+		// 		}
+		// 	}
+		// }
 		// log.Println("print", sliceBets)
 		// log.Printf("O tipo de myVar é %T\n", sliceBets)
 		// log.Println("print", *sliceBets)
@@ -122,7 +146,6 @@ func controlBet(dbConexao *sql.DB, msgStatusChan <-chan msgStatusStruct, msgSign
 			// log.Println("Recebeu sinal msgSignalChan", mensagens)
 			// log.Println("Recebeu sinal ", signalMsg)
 			sliceSignals = append(sliceSignals, signalMsg)
-
 			// default:
 			// 	// Faça algo aqui se ambos os canais estiverem vazios.
 			// 	// Por exemplo, tente novamente mais tarde.

@@ -65,7 +65,6 @@ func saveToDatabaseUsers(dbConexao *sql.DB, pload payloadStruct) {
 
 	for _, bet := range pload.Bets {
 		// var exists bool
-
 		// err := dbConexao.QueryRow(
 		// 	"SELECT EXISTS(SELECT ID_bet_uniqa FROM api_gouserresults WHERE ID_bet_uniqa = ?)",
 		// 	bet.IDBetUser).Scan(&exists)
@@ -77,7 +76,6 @@ func saveToDatabaseUsers(dbConexao *sql.DB, pload payloadStruct) {
 		// 	// log.Println("registro de user  já existe", bet.IDBetUser)
 		// 	continue
 		// }
-
 		_, err = stmt.Exec(
 			pload.IDBet, bet.IDBetUser, pload.Timestamp, bet.Color, bet.Amount, bet.CurrencyType, bet.User.IDStr)
 		if err != nil {
