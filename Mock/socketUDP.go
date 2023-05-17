@@ -10,10 +10,10 @@ import (
 const address = "127.0.0.1:1234"
 
 type msgSignal struct {
-	Type      string `json:"type"`
-	Timestamp int64  `json:"time"`
-	Color     int    `json:"color"`
-	Source    string `json:"source"`
+	Type      string  `json:"type"`
+	Timestamp float64 `json:"time"`
+	Color     int     `json:"color"`
+	Source    int     `json:"source"`
 }
 
 func main() {
@@ -21,14 +21,14 @@ func main() {
 		Type:      "realtime",
 		Timestamp: 111,
 		Color:     1,
-		Source:    "fonte_1",
+		Source:    111,
 	}
 
 	message2 := &msgSignal{
 		Type:      "realtime",
 		Timestamp: 222,
 		Color:     2,
-		Source:    "fonte_2",
+		Source:    1111,
 	}
 
 	if err := sendUDPMessage(message); err != nil {
