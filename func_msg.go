@@ -21,21 +21,6 @@ const (
 	fatorColor = 2
 )
 
-func (p *payloadStruct) calculateTotals() {
-	p.TotalBetsPlaced = p.TotalRedBetsPlaced + p.TotalWhiteBetsPlaced + p.TotalBlackBetsPlaced
-
-	p.TotalEurBet = p.TotalRedEurBet + p.TotalWhiteEurBet + p.TotalBlackEurBet
-
-	switch p.Color {
-	case red:
-		p.TotalRetentionEur = p.TotalEurBet - p.TotalRedEurBet*fatorColor
-	case black:
-		p.TotalRetentionEur = p.TotalEurBet - p.TotalBlackEurBet*fatorColor
-	case white:
-		p.TotalRetentionEur = p.TotalEurBet - p.TotalWhiteEurBet*fatorWhite
-	}
-}
-
 func decodePayload(message []byte) (*payloadStruct, error) {
 	// log.Println("Gotoutine", runtime.NumGoroutine())
 	var data []json.RawMessage
@@ -140,7 +125,9 @@ func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChanWe
 
 			if payload.Status == "waiting" {
 				for _, bet := range payload.Bets {
-					rankBet = bet
+					if bet.Amount > rankBet.Amount && bet.Color != 0 {
+						rankBet = bet
+					}
 				}
 
 				go saveToDatabaseUsers(dbConexao, *payload)
@@ -150,13 +137,18 @@ func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChanWe
 				msgStatusChan <- *Status
 				if Status.betStatus == "waiting" {
 					time.AfterFunc(11*time.Second, func() {
-						go sinalRank(&rankBet, msgSignalChan, payload.IDBet)
+						go sinalLogico(rankBet.Color, msgSignalChan, payload.IDBet, 1)
+					})
+					time.AfterFunc(11*time.Second, func() {
+						go sinalLogico(payload.verifySmallbet(), msgSignalChan, payload.IDBet, 2)
 					})
 				}
 
 				if Status.betStatus == "complete" || Status.betStatus == "rolling" {
 					log.Println("#######MELHOR APOSTA#######", rankBet, payload.IDBet)
+					log.Println("#######MENOR APOSTA#######", payload.verifySmallbet(), payload.IDBet)
 					rankBet = betsUsersStruct{}
+
 				}
 
 			}
@@ -168,13 +160,13 @@ func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChanWe
 	}
 }
 
-func sinalRank(rank *betsUsersStruct, msgSignalChan chan msgSignalStruct, idbet string) {
-	log.Println("#######APOSTA QUE DEU PARA PEGAR#######", rank, idbet)
+func sinalLogico(color int, msgSignalChan chan msgSignalStruct, idbet string, source int) {
+	log.Println("#######APOSTA QUE DEU PARA PEGAR#######", color, idbet, source)
 	msgSignal := msgSignalStruct{
 		Type:      "realtime",
 		Timestamp: 0.0,
-		Color:     rank.Color,
-		Source:    1,
+		Color:     color,
+		Source:    source,
 	}
 
 	msgSignalChan <- msgSignal

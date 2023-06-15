@@ -52,6 +52,30 @@ type payloadStruct struct {
 	Bets                 []betsUsersStruct `json:"bets"`
 }
 
+func (p *payloadStruct) calculateTotals() {
+	p.TotalBetsPlaced = p.TotalRedBetsPlaced + p.TotalWhiteBetsPlaced + p.TotalBlackBetsPlaced
+
+	p.TotalEurBet = p.TotalRedEurBet + p.TotalWhiteEurBet + p.TotalBlackEurBet
+
+	switch p.Color {
+	case red:
+		p.TotalRetentionEur = p.TotalEurBet - p.TotalRedEurBet*fatorColor
+	case black:
+		p.TotalRetentionEur = p.TotalEurBet - p.TotalBlackEurBet*fatorColor
+	case white:
+		p.TotalRetentionEur = p.TotalEurBet - p.TotalWhiteEurBet*fatorWhite
+	}
+}
+
+func (p *payloadStruct) verifySmallbet() (color int) {
+	if p.TotalBlackEurBet > p.TotalRedEurBet {
+		color = 1
+	} else {
+		color = 2
+	}
+	return
+}
+
 type betsUsersStruct struct {
 	IDBetUser    string  `json:"id"`
 	Color        int     `json:"color"`
