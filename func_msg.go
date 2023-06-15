@@ -140,9 +140,7 @@ func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChanWe
 
 			if payload.Status == "waiting" {
 				for _, bet := range payload.Bets {
-					if bet.Amount > rankBet.Amount && bet.Color != 0 {
-						rankBet = bet
-					}
+					rankBet = bet
 				}
 
 				go saveToDatabaseUsers(dbConexao, *payload)
@@ -151,13 +149,13 @@ func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChanWe
 			if Status != nil {
 				msgStatusChan <- *Status
 				if Status.betStatus == "waiting" {
-					time.AfterFunc(10*time.Second, func() {
+					time.AfterFunc(11*time.Second, func() {
 						go sinalRank(&rankBet, msgSignalChan, payload.IDBet)
 					})
 				}
 
 				if Status.betStatus == "complete" || Status.betStatus == "rolling" {
-					fmt.Println("#######MELHOR APOSTA#######", rankBet, payload.IDBet)
+					log.Println("#######MELHOR APOSTA#######", rankBet, payload.IDBet)
 					rankBet = betsUsersStruct{}
 				}
 
@@ -171,7 +169,7 @@ func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChanWe
 }
 
 func sinalRank(rank *betsUsersStruct, msgSignalChan chan msgSignalStruct, idbet string) {
-	fmt.Println("#######APOSTA QUE DEU PARA PEGAR#######", rank, idbet)
+	log.Println("#######APOSTA QUE DEU PARA PEGAR#######", rank, idbet)
 	msgSignal := msgSignalStruct{
 		Type:      "realtime",
 		Timestamp: 0.0,

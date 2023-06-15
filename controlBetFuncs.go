@@ -8,9 +8,9 @@ import (
 )
 
 const (
-	maxGale     = 3
+	maxGale     = 0
 	amount      = 2.0
-	tempoEspera = 11
+	tempoEspera = 12
 )
 
 func sinal2Playbet(sliceSignals *[]msgSignalStruct,
