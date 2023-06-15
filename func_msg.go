@@ -100,6 +100,8 @@ func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChanWe
 
 	var auxEurBet totalEurBetStruct
 
+	var rankBet betsUsersStruct
+
 	for {
 		select {
 		case msg, ok := <-msgChanWebsocket:
@@ -125,6 +127,11 @@ func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChanWe
 
 			if payload.Status == "waiting" {
 				// log.Printf("waiting red: %f , black:%f\n", payload.TotalRedEurBet, payload.TotalBlackEurBet)
+				for _, bet := range payload.Bets {
+					if bet.Amount > rankBet.Amount && bet.Color != 0 {
+						rankBet = bet
+					}
+				}
 				auxEurBet = totalEurBetStruct{
 					TotalRedEurBet:   payload.TotalRedEurBet,
 					TotalBlackEurBet: payload.TotalBlackEurBet,
@@ -134,11 +141,10 @@ func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChanWe
 
 			if Status != nil {
 				msgStatusChan <- *Status
-
 				if Status.betStatus == "waiting" {
-					time.AfterFunc(2*time.Second, func() {
+					time.AfterFunc(12*time.Second, func() {
 						log.Printf("after red: %f , black:%f\n", auxEurBet.TotalRedEurBet, auxEurBet.TotalBlackEurBet)
-						sinalLogico(auxEurBet, msgSignalChan, payload.IDBet, 2)
+						sinalLogico(auxEurBet.verifySmallbetEur(), rankBet.Color, msgSignalChan, 3)
 					})
 				}
 
@@ -156,16 +162,17 @@ func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChanWe
 	}
 }
 
-func sinalLogico(auxEurBet totalEurBetStruct, msgSignalChan chan msgSignalStruct, idbet string, source int) {
-	log.Printf("sinalLogico red: %f , black:%f\n", auxEurBet.TotalRedEurBet, auxEurBet.TotalBlackEurBet)
-	log.Println("sinalLogico COR COM MENOR VALOR:", auxEurBet.verifySmallbetEur())
+func sinalLogico(colorSmallEur int, rankColor int, msgSignalChan chan msgSignalStruct, source int) {
+	// log.Printf("sinalLogico red: %f , black:%f\n", auxEurBet.TotalRedEurBet, auxEurBet.TotalBlackEurBet)
+	// log.Println("sinalLogico COR COM MENOR VALOR:", auxEurBet.verifySmallbetEur())
+	if colorSmallEur == rankColor {
+		msgSignal := msgSignalStruct{
+			Type:      "realtime",
+			Timestamp: 0.0,
+			Color:     colorSmallEur,
+			Source:    source,
+		}
 
-	msgSignal := msgSignalStruct{
-		Type:      "realtime",
-		Timestamp: 0.0,
-		Color:     auxEurBet.verifySmallbetEur(),
-		Source:    source,
+		msgSignalChan <- msgSignal
 	}
-
-	msgSignalChan <- msgSignal
 }
