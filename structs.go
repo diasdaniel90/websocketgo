@@ -34,7 +34,7 @@ type lastMsgStruct struct {
 	lastID        string
 	lastIDWaiting string
 }
-type PayloadStruct struct {
+type payloadStruct struct {
 	IDBet                string            `json:"id"`
 	Color                int               `json:"color"`
 	Roll                 int               `json:"roll"`
@@ -54,7 +54,12 @@ type PayloadStruct struct {
 	Bets                 []betsUsersStruct `json:"bets"`
 }
 
-func (p *PayloadStruct) calculateTotals() {
+type totalEurBetStruct struct {
+	TotalRedEurBet   float64
+	TotalBlackEurBet float64
+}
+
+func (p *payloadStruct) calculateTotals() {
 	p.TotalBetsPlaced = p.TotalRedBetsPlaced + p.TotalWhiteBetsPlaced + p.TotalBlackBetsPlaced
 
 	p.TotalEurBet = p.TotalRedEurBet + p.TotalWhiteEurBet + p.TotalBlackEurBet
@@ -69,13 +74,23 @@ func (p *PayloadStruct) calculateTotals() {
 	}
 }
 
-func (p *PayloadStruct) verifySmallbet() (color int) {
+func (p *payloadStruct) verifySmallbet() (color int) {
 	if p.TotalBlackEurBet > p.TotalRedEurBet {
 		color = 1
 	} else {
 		color = 2
 	}
 	log.Printf("verifySmallbet red: %f , black:%f\n", p.TotalRedEurBet, p.TotalBlackEurBet)
+
+	return
+}
+
+func (p *totalEurBetStruct) verifySmallbetEur() (color int) {
+	if p.TotalBlackEurBet > p.TotalRedEurBet {
+		color = 1
+	} else {
+		color = 2
+	}
 
 	return
 }

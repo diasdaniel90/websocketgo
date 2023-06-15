@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func saveToDatabase(dbConexao *sql.DB, pload *PayloadStruct) error {
+func saveToDatabase(dbConexao *sql.DB, pload *payloadStruct) error {
 	// Consultar se já existe registro com o id_bet informado
 	var exists bool
 
@@ -50,7 +50,7 @@ func saveToDatabase(dbConexao *sql.DB, pload *PayloadStruct) error {
 	return nil
 }
 
-func saveToDatabaseUsers(dbConexao *sql.DB, pload PayloadStruct) {
+func saveToDatabaseUsers(dbConexao *sql.DB, pload payloadStruct) {
 	stmt, err := dbConexao.Prepare(
 		"INSERT IGNORE INTO api_gouserresults" +
 			"(ID_bet, ID_bet_uniqa, `timestamp`, color, amount, currency_type,user) VALUES (?, ?, ?, ?, ?, ?, ?)")
