@@ -92,7 +92,7 @@ func saveToDatabaseBets(dbConexao *sql.DB, betsLoad *[]betBotStruct) error {
 		// log.Println("vai gravar ", bet.IDBetUser)
 		// timestamp_, _ := time.Parse(layout, betsLoad.CreatedAt)
 		// betsLoad.Timestamp = timestamp_.Unix()
-		log.Println(value)
+		// log.Println("nao sei", value)
 		_, err = stmt.Exec(
 			value.idBet, value.timestamp, value.timestampSinal, value.color, value.source, value.win,
 			value.status, value.gale, value.amount, value.balanceWin)

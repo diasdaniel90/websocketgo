@@ -41,7 +41,7 @@ func main() {
 
 	wg.Add(1)
 
-	go controlMsg(&wg, conn, dbConexao, msgChanWebsocket, errChan, msgStatusChan)
+	go controlMsg(&wg, conn, dbConexao, msgChanWebsocket, errChan, msgStatusChan, msgSignalChan)
 
 	wg.Wait()
 }

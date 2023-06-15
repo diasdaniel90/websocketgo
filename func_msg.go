@@ -107,11 +107,13 @@ func filterMessage(dbConexao *sql.DB, payload *payloadStruct, lastMsg *lastMsgSt
 }
 
 func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChanWebsocket chan []byte,
-	errChan chan error, msgStatusChan chan msgStatusStruct,
+	errChan chan error, msgStatusChan chan msgStatusStruct, msgSignalChan chan msgSignalStruct,
 ) {
 	defer wg.Done()
 
 	var lastMsg lastMsgStruct
+
+	var rankBet betsUsersStruct
 
 	for {
 		select {
@@ -137,11 +139,28 @@ func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChanWe
 			}
 
 			if payload.Status == "waiting" {
+				for _, bet := range payload.Bets {
+					if bet.Amount > rankBet.Amount && bet.Color != 0 {
+						rankBet = bet
+					}
+				}
+
 				go saveToDatabaseUsers(dbConexao, *payload)
 			}
 
 			if Status != nil {
 				msgStatusChan <- *Status
+				if Status.betStatus == "waiting" {
+					time.AfterFunc(10*time.Second, func() {
+						go sinalRank(&rankBet, msgSignalChan, payload.IDBet)
+					})
+				}
+
+				if Status.betStatus == "complete" || Status.betStatus == "rolling" {
+					fmt.Println("#######MELHOR APOSTA#######", rankBet, payload.IDBet)
+					rankBet = betsUsersStruct{}
+				}
+
 			}
 
 		case err := <-errChan:
@@ -149,4 +168,16 @@ func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChanWe
 			reconnect(conn, msgChanWebsocket, errChan)
 		}
 	}
+}
+
+func sinalRank(rank *betsUsersStruct, msgSignalChan chan msgSignalStruct, idbet string) {
+	fmt.Println("#######APOSTA QUE DEU PARA PEGAR#######", rank, idbet)
+	msgSignal := msgSignalStruct{
+		Type:      "realtime",
+		Timestamp: 0.0,
+		Color:     rank.Color,
+		Source:    1,
+	}
+
+	msgSignalChan <- msgSignal
 }

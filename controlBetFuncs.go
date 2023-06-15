@@ -8,15 +8,15 @@ import (
 )
 
 const (
-	maxGale     = 5
+	maxGale     = 3
 	amount      = 2.0
-	tempoEspera = 4
+	tempoEspera = 11
 )
 
 func sinal2Playbet(sliceSignals *[]msgSignalStruct,
 	msgStatusRec msgStatusStruct, sliceBets *[]betBotStruct,
 ) {
-	log.Printf("Executando a função após %d segundos...", tempoEspera)
+	log.Printf("Executou de pois de  %d segundos...", tempoEspera)
 
 	log.Println("sliceSignals", sliceSignals)
 	log.Println("msgStatusRec", msgStatusRec)
@@ -37,7 +37,7 @@ func sinal2Playbet(sliceSignals *[]msgSignalStruct,
 			}
 			*sliceBets = append(*sliceBets, bet)
 
-			log.Println("value", value)
+			// log.Println("value", value)
 		}
 
 		*sliceSignals = []msgSignalStruct{}
@@ -105,7 +105,7 @@ func controlBet(dbConexao *sql.DB, msgStatusChan <-chan msgStatusStruct, msgSign
 			}
 
 			if msgStatusRec.betStatus == waiting {
-				log.Print("vai esperar")
+				log.Printf("Vai executar após %d segundos...", tempoEspera)
 				setID(&sliceBets, msgStatusRec)
 
 				time.AfterFunc(tempoEspera*time.Second, func() {
