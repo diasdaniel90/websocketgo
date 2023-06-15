@@ -1,5 +1,7 @@
 package main
 
+import "log"
+
 type betBotStruct struct {
 	idBet          string
 	timestamp      int64
@@ -32,7 +34,7 @@ type lastMsgStruct struct {
 	lastID        string
 	lastIDWaiting string
 }
-type payloadStruct struct {
+type PayloadStruct struct {
 	IDBet                string            `json:"id"`
 	Color                int               `json:"color"`
 	Roll                 int               `json:"roll"`
@@ -52,7 +54,7 @@ type payloadStruct struct {
 	Bets                 []betsUsersStruct `json:"bets"`
 }
 
-func (p *payloadStruct) calculateTotals() {
+func (p *PayloadStruct) calculateTotals() {
 	p.TotalBetsPlaced = p.TotalRedBetsPlaced + p.TotalWhiteBetsPlaced + p.TotalBlackBetsPlaced
 
 	p.TotalEurBet = p.TotalRedEurBet + p.TotalWhiteEurBet + p.TotalBlackEurBet
@@ -67,12 +69,14 @@ func (p *payloadStruct) calculateTotals() {
 	}
 }
 
-func (p *payloadStruct) verifySmallbet() (color int) {
+func (p *PayloadStruct) verifySmallbet() (color int) {
 	if p.TotalBlackEurBet > p.TotalRedEurBet {
 		color = 1
 	} else {
 		color = 2
 	}
+	log.Printf("verifySmallbet red: %f , black:%f\n", p.TotalRedEurBet, p.TotalBlackEurBet)
+
 	return
 }
 

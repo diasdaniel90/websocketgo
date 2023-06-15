@@ -21,16 +21,16 @@ const (
 	fatorColor = 2
 )
 
-func decodePayload(message []byte) (*payloadStruct, error) {
+func decodePayload(message []byte) (*PayloadStruct, error) {
 	// log.Println("Gotoutine", runtime.NumGoroutine())
 	var data []json.RawMessage
 	if err := json.Unmarshal(message, &data); err != nil {
 		return nil, fmt.Errorf("error unmarshaling payload:: %w", err)
 	}
 
-	var payload payloadStruct
+	var payload PayloadStruct
 	if err := json.Unmarshal(data[1], &struct {
-		Payload *payloadStruct `json:"payload"`
+		Payload *PayloadStruct `json:"payload"`
 	}{&payload}); err != nil {
 		return nil, fmt.Errorf("error unmarshaling payload:: %w", err)
 	}
@@ -39,7 +39,7 @@ func decodePayload(message []byte) (*payloadStruct, error) {
 	return &payload, nil
 }
 
-func filterMessage(dbConexao *sql.DB, payload *payloadStruct, lastMsg *lastMsgStruct) (*msgStatusStruct, error) {
+func filterMessage(dbConexao *sql.DB, payload *PayloadStruct, lastMsg *lastMsgStruct) (*msgStatusStruct, error) {
 	// Verifica se a mensagem é duplicada com base no campo updated_at
 	var err error
 
@@ -98,7 +98,7 @@ func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChanWe
 
 	var lastMsg lastMsgStruct
 
-	var rankBet betsUsersStruct
+	var vaiaux PayloadStruct
 
 	for {
 		select {
@@ -124,31 +124,26 @@ func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChanWe
 			}
 
 			if payload.Status == "waiting" {
-				for _, bet := range payload.Bets {
-					if bet.Amount > rankBet.Amount && bet.Color != 0 {
-						rankBet = bet
-					}
-				}
-
+				log.Printf("waiting red: %f , black:%f\n", payload.TotalRedEurBet, payload.TotalBlackEurBet)
+				vaiaux = *payload
 				go saveToDatabaseUsers(dbConexao, *payload)
 			}
 
 			if Status != nil {
 				msgStatusChan <- *Status
+
 				if Status.betStatus == "waiting" {
-					time.AfterFunc(11*time.Second, func() {
-						go sinalLogico(rankBet.Color, msgSignalChan, payload.IDBet, 1)
-					})
-					time.AfterFunc(11*time.Second, func() {
-						go sinalLogico(payload.verifySmallbet(), msgSignalChan, payload.IDBet, 2)
-					})
+					time.AfterFunc(11*time.Second, func(vaiaux PayloadStruct) func() {
+						return func() {
+							log.Printf("after red: %f , black:%f\n", payload.TotalRedEurBet, payload.TotalBlackEurBet)
+							sinalLogico(vaiaux, msgSignalChan, payload.IDBet, 2)
+						}
+					}(vaiaux))
 				}
 
 				if Status.betStatus == "complete" || Status.betStatus == "rolling" {
-					log.Println("#######MELHOR APOSTA#######", rankBet, payload.IDBet)
-					log.Println("#######MENOR APOSTA#######", payload.verifySmallbet(), payload.IDBet)
-					rankBet = betsUsersStruct{}
-
+					log.Printf("final red: %f , black:%f\n", payload.TotalRedEurBet, payload.TotalBlackEurBet)
+					log.Println("final COR COM MENOR VALOR:", payload.verifySmallbet())
 				}
 
 			}
@@ -160,12 +155,14 @@ func controlMsg(wg *sync.WaitGroup, conn io.Closer, dbConexao *sql.DB, msgChanWe
 	}
 }
 
-func sinalLogico(color int, msgSignalChan chan msgSignalStruct, idbet string, source int) {
-	log.Println("#######APOSTA QUE DEU PARA PEGAR#######", color, idbet, source)
+func sinalLogico(payload PayloadStruct, msgSignalChan chan msgSignalStruct, idbet string, source int) {
+	log.Printf("sinalLogico red: %f , black:%f\n", payload.TotalRedEurBet, payload.TotalBlackEurBet)
+	log.Println("sinalLogico COR COM MENOR VALOR:", payload.verifySmallbet())
+
 	msgSignal := msgSignalStruct{
 		Type:      "realtime",
 		Timestamp: 0.0,
-		Color:     color,
+		Color:     payload.verifySmallbet(),
 		Source:    source,
 	}
 
